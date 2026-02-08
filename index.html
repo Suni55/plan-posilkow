@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Plan Posiłków">
+    <title>Plan Posiłków</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Bricolage+Grotesque:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --primary-dark: #E85A2A;
+            --secondary: #2EC4B6;
+            --bg-main: #FFF9F5;
+            --bg-card: #FFFFFF;
+            --text-primary: #2D2D2D;
+            --text-secondary: #6B7280;
+            --border: #E5E7EB;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding-bottom: 80px;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, #FF8F6B 100%);
+            padding: 20px 20px 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .header h1 {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 88px;
+            z-index: 90;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            border-radius: 12px;
+            background: var(--bg-main);
+            border: 2px solid transparent;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .content {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .day-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .day-card:active {
+            transform: scale(0.98);
+        }
+
+        .day-header {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--bg-main);
+        }
+
+        .meal-row {
+            margin-bottom: 16px;
+        }
+
+        .meal-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .meal-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .meal-select-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--primary);
+            font-size: 12px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px 32px 12px 12px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            color: var(--text-primary);
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .person-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .shopping-list {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .shopping-item {
+            display: grid;
+            grid-template-columns: 28px 1fr 80px 80px;
+            gap: 12px;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--bg-main);
+            transition: background 0.2s ease;
+        }
+
+        .shopping-item:last-child {
+            border-bottom: none;
+        }
+
+        .shopping-item.checked {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox.checked {
+            background: var(--primary);
+        }
+
+        .checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .item-details {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .item-input {
+            width: 70px;
+            padding: 6px 8px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            font-family: inherit;
+            font-weight: 500;
+        }
+
+        .item-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+
+        .item-needed {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .category-header {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 24px 0 12px 0;
+            padding: 8px 0;
+            border-bottom: 2px solid var(--bg-main);
+        }
+
+        .category-header:first-child {
+            margin-top: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .btn-clear {
+            width: 100%;
+            padding: 16px;
+            background: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-clear:active {
+            transform: scale(0.98);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, #FF8F6B 100%);
+            padding: 16px;
+            border-radius: 12px;
+            color: white;
+        }
+
+        .stat-value {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .shopping-header-row {
+            display: grid;
+            grid-template-columns: 28px 1fr 80px 80px;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-main);
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 8px;
+        }
+
+        .header-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        @media (max-width: 640px) {
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🍽️ Plan Posiłków</h1>
+        <p>Planuj posiłki i twórz listę zakupów</p>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('plan')">📅 Plan</div>
+        <div class="tab" onclick="switchTab('shopping')">🛒 Zakupy</div>
+    </div>
+
+    <div class="content">
+        <!-- TAB: Plan -->
+        <div id="tab-plan" class="tab-content active">
+            <div id="plan-container"></div>
+        </div>
+
+        <!-- TAB: Zakupy -->
+        <div id="tab-shopping" class="tab-content">
+            <div class="stats" id="shopping-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-items">0</div>
+                    <div class="stat-label">Produktów</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="checked-items">0</div>
+                    <div class="stat-label">Kupionych</div>
+                </div>
+            </div>
+            <div class="shopping-list" id="shopping-list"></div>
+            <button class="btn-clear" onclick="clearCheckedItems()">Wyczyść kupione</button>
+        </div>
+    </div>
+
+    <script>
+        // Dane z Excela
+        const PRZEPISY_DATA = {"przepisy": ["Pieczony omlet z cukinii", "Płatki na mleku z gruszką oraz jabłkiem", "Szybkie placuszki bananowe z cynamonem", "Zapiekana owsianka z owocami (2 porcje)", "Proteinowa owsianka na mleku migdałowym", "Budyń z malinami", "Omlecik z tortillą", "Nocna owsianka a la Monte z puddingiem", "Kanapka z pastą z makreli oraz jajka", "Omlet na słodko z bananem (618 kcal)", "Białkowy shake z masłem orzechowym", "Ryż z jabłkiem", "Pasta z sera twarogowego bez laktozy z czarnuszką z warzywami", "Pieczona owsianka z jagodami", "Nocna owsianka kawowa", "Kanapki z serkiem śmietankowym, pomidorem oraz szczypiorkiem", "Sałatka z tuńczykiem", "Pasta jajeczna z ogórkiem, szczypiorkiem, koperkiem oraz chlebem razowym", "Pieczona owsianka z gruszką oraz imbirem mielonym", "Tatar z pomidora z serkiem wiejskim bez laktozy i tostem", "Pancakes", "Kanapki z serem twarogowym bez laktozy, masłem orzechowym oraz dżemem wiśniowym", "Kanapka z jajkiem", "Omlet mleczna kanapka", "Kanapka z pastą z awokado i tuńczykiem", "Złota owsianka z malinami", "Kanapki z jajkiem i hummusem", "Placuszki z serka wiejskiego bez laktozy", "Owsianka banoffee", "Owsianka z kawałkami kiwi oraz borówkami", "Ryż na słodko", "Sałatka z tuńczykiem, ryżem, papryką czerwoną oraz kukurydzą konserwową", "Kanapka z pastą z jajka oraz awokado", "Skyrowe omleciki z miodem oraz borówkami (2 porcje)", "Frittata z pieczarkami, szpinakiem oraz serem typu feta", "Pizza z serem wegańskim (2 porcje)", "Kanapki w greckim stylu", "Sałatka z ciecierzycą, pomidorkami koktajlowymi, ogórkiem oraz papryką czerwoną", "Bajgiel z kremowym sosem", "Chrupiące tosty z serkiem, szpinakiem i pomidorem", "Tosty francuskie z puddingiem proteinowym i owocami", "Słodki omlet z musem owocowym", "Tortilla z serkiem śmietankowym, pstrągiem wędzonym oraz szpinakiem", "Maślankowe placuszki z owocami (liczba porcji: 2)", "Sałatka grecka z mozzarellą oraz chlebem razowym", "Serek waniliowy z gorzką czekoladą oraz bananem", "Wiosenny serek wiejski z ogórkiem, papryką czerwoną oraz rzodkiewką i pieczywem", "Chrupiące kanapki na słodko z serkiem i gruszką", "Owsianka a la Mars", "Sałatka makaronowa z brokułem oraz słonecznikiem", "Bananowe placuszki z mąki owsianej", "Serek wiejski z malinami, borówkami oraz masłem orzechowym", "Sałatka z tuńczykiem i ryżem", "Pieczona owsianka z jabłkiem oraz cynamonem (liczba porcji: 2)", "Pieczone syrniki z owocami (liczba porcji: 2)", "Pieczywo z wiosennym serkiem wiejskim bez laktozy, rzodkiewką i ogórkiem", "Placuszki owsiane z gorzką czekoladą oraz borówkami", "Jajecznica z cukinią", "Japoński omlet", "Omlet na słodko z bananem (495 kcal)", "Grzanki z tuńczykiem i pomidorami", "Kanapka z jajkiem i szynką z kurczaka", "Kanapki z jajkiem oraz awokado", "Sałatka curry z kurczakiem oraz ananasem", "Pieczona owsianka z jagodami (liczba porcji: 2)", "Tortilla z twarożkiem, szynką, sałatą i ogórkiem", "Nocna owsianka z morelami oraz orzechami pistacjowymi", "Borówkowa owsianka na zimno", "Owsianka a la Snickers", "Koktajl orzechowo-bananowy", "Kanapki z szynką, jajkiem i ogórkiem kiszonym", "Pasta z jajek z rzodkiewką,, ogórkiem, szczypiorkiem, i pieczywem", "Czerwone curry z ryżem", "Leczo z tofu", "Chłodnik ze szpinaku", "Kremowy makaron z pstrągiem wędzonym i szpinakiem", "Pieczone tofu z sosem musztardowym", "Zapiekane pieczarki portobello z farszem z jajek", "Pieczony dorsz z ryżem oraz burakiem", "Gulasz z ciecierzycy", "Klejące ostre tofu", "Tortilla z ciecierzycą, cukinią, bakłażanem oraz papryką czerwoną i sosem jogurtowym", "Kotleciki jajeczne z pieczarkami", "Sałatka z jabłkiem, burakiem oraz serkiem wiejskim bez laktozy", "Ryż z mrożonką chińską z tofu", "Kolorowy ryż z jajkiem", "Wegańska carbonara z tofu", "Dorsz gotowany na parze z kuskusem", "Sałatka z tofu z sosem sezamowym", "Sałatka z tuńczykiem, ogórkiem, selerem naciowym, kukurydzą i grzankami", "Pieczone warzywa z mleczkiem kokosowym i pomidorkami koktajlowymi", "Pieczony łosoś z puree z selera i pieczonymi ziemniakami", "Krem marchewkowy", "Curry z ciecierzycy oraz kalafiora", "Tortilla z ciecierzycą, cukinią oraz awokado", "Makaron z tuńczykiem, szpinakiem oraz pomidorkami koktajlowymi", "Gulasz z ciecierzycy z ziemniakami oraz kalafiorem", "Makaron azjatycki z jajkiem", "Sałatka z tuńczykiem i jajkiem", "Zupa koperkowa z jajkiem", "Makaron z tuńczykiem, oliwkami, kaparami oraz pokrojone pomidorki", "Kopytka na słodko z twarogiem i cynamonową marchwią", "Gnocchi w kremowym sosie + skyr", "Curry z dyni (liczba porcji: 2)", "Kurczak Fajita", "Makaron azjatycki z kurczakiem", "Kurczak z tymiankiem suszonym, pieczonymi ziemniakami i surówką z marchwi i jabłka", "Domowa zupa pomidorowa z klopsikami", "Burrito", "Burger wołowy z pikantną salsą", "Fit Kebab", "Burger curry z mięsa", "Chilli con carne z ryżem", "Kurczak w kremowym sosie curry", "Krupnik z kaszą jaglaną", "Leczo z indykiem, selerem naciowym oraz kaszą gryczaną", "Sałatka z rukolą, fetą i granatem"], "skladniki": {"Pieczony omlet z cukinii": [{"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Cukinia", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Bazylia świeża", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Czosnek granulowany", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Zioła prowansalskie", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 120.0, "jednostka": "g"}], "Płatki na mleku z gruszką oraz jabłkiem": [{"skladnik": "Płatki jaglane", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Mleko roślinne niesłodzone", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Gruszka", "ilosc": 130.0, "jednostka": "g"}, {"skladnik": "Jabłko", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Cynamon mielony", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr sojowy", "ilosc": 170.0, "jednostka": "g"}, {"skladnik": "Orzechy włoskie", "ilosc": 20.0, "jednostka": "g"}], "Szybkie placuszki bananowe z cynamonem": [{"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Płatki owsiane górskie", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Cynamon mielony", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Borówki amerykańskie, świeże lub mrożone", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Syrop klonowy", "ilosc": 20.0, "jednostka": "g"}], "Zapiekana owsianka z owocami (2 porcje)": [{"skladnik": "Płatki owsiane górskie", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Mleko roślinne niesłodzone", "ilosc": 500.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 48.0, "jednostka": "g"}, {"skladnik": "Śliwki, świeże lub mrożone", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 280.0, "jednostka": "g"}], "Proteinowa owsianka na mleku migdałowym": [{"skladnik": "Płatki owsiane górskie", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Mleko migdałowe", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 180.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Cynamon mielony", "ilosc": 2.0, "jednostka": "g"}], "Budyń z malinami": [{"skladnik": "Kasza jaglana", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 235.0, "jednostka": "g"}, {"skladnik": "Maliny świeże lub mrożone", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Płatki migdałów", "ilosc": 30.0, "jednostka": "g"}], "Omlecik z tortillą": [{"skladnik": "Tortilla pełnoziarnista", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Pomidor", "ilosc": 0.5, "jednostka": "szt"}, {"skladnik": "Ser mozzarella kulka", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Nocna owsianka a la Monte z puddingiem": [{"skladnik": "Płatki owsiane górskie", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Nasiona chia", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Active", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Orzechy laskowe", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Borówki amerykańskie, świeże lub mrożone", "ilosc": 100.0, "jednostka": "g"}], "Kanapka z pastą z makreli oraz jajka": [{"skladnik": "Makrela wędzona", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Papryka czerwona", "ilosc": 170.0, "jednostka": "g"}], "Omlet na słodko z bananem (618 kcal)": [{"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Mąka pszenna pełnoziarnista", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Wiórki kokosowe", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Kakao", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Proszek do pieczenia", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Truskawki, świeże lub mrożone", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 35.0, "jednostka": "g"}], "Białkowy shake z masłem orzechowym": [{"skladnik": "Mleko roślinne niesłodzone", "ilosc": 250.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 180.0, "jednostka": "g"}, {"skladnik": "Płatki owsiane górskie", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 5.0, "jednostka": "g"}], "Ryż z jabłkiem": [{"skladnik": "Ryż biały", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Mleko roślinne niesłodzone", "ilosc": 250.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Jabłko", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Cynamon mielony", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Orzechy włoskie", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 140.0, "jednostka": "g"}], "Pasta z sera twarogowego bez laktozy z czarnuszką z warzywami": [{"skladnik": "Ser twarogowy półtłusty bez laktozy", "ilosc": 126.0, "jednostka": "g"}, {"skladnik": "Mleko roślinne niesłodzone", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Czarnuszka", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 0.5, "jednostka": "szt"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Rzodkiewka", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Roszponka", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}], "Pieczona owsianka z jagodami": [{"skladnik": "Płatki owsiane górskie", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Proszek do pieczenia", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Cynamon mielony", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 18.0, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Jagody świeże lub mrożone", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 70.0, "jednostka": "g"}], "Nocna owsianka kawowa": [{"skladnik": "Płatki owsiane górskie", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Napar z kawy (bez cukru)", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Pudding proteinowy caffe latte Go Active", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Kakao", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Borówki amerykańskie, świeże lub mrożone", "ilosc": 75.0, "jednostka": "g"}], "Kanapki z serkiem śmietankowym, pomidorem oraz szczypiorkiem": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Serek śmietankowy bez laktozy", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 0.5, "jednostka": "szt"}, {"skladnik": "Szczypiorek siekany", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Serek wiejski bez laktozy", "ilosc": 210.0, "jednostka": "g"}], "Sałatka z tuńczykiem": [{"skladnik": "Sok z cytryny", "ilosc": 9.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 35.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Miks sałat", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Oliwki zielone", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Tuńczyk w sosie własnym", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Oregano suszone", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Pasta jajeczna z ogórkiem, szczypiorkiem, koperkiem oraz chlebem razowym": [{"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Chleb żytni razowy", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Musztarda", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 35.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Koper posiekany", "ilosc": 8.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Pieczona owsianka z gruszką oraz imbirem mielonym": [{"skladnik": "Płatki owsiane górskie", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Proszek do pieczenia", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Cynamon mielony", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Imbir mielony", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Syrop klonowy", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Gruszka", "ilosc": 130.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 70.0, "jednostka": "g"}], "Tatar z pomidora z serkiem wiejskim bez laktozy i tostem": [{"skladnik": "Pomidor", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Serek wiejski bez laktozy", "ilosc": 170.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Pancakes": [{"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Płatki owsiane górskie", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 70.0, "jednostka": "g"}], "Kanapki z serem twarogowym bez laktozy, masłem orzechowym oraz dżemem wiśniowym": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Ser twarogowy półtłusty bez laktozy", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Dżem wiśniowy", "ilosc": 45.0, "jednostka": "g"}], "Kanapka z jajkiem": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Serek śmietankowy bez laktozy", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Pomidor", "ilosc": 0.5, "jednostka": "szt"}, {"skladnik": "Rzodkiewka", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Rukola", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 10.0, "jednostka": "g"}], "Omlet mleczna kanapka": [{"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Mąka pszenna pełnoziarnista", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Kakao", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 55.0, "jednostka": "g"}, {"skladnik": "Proszek do pieczenia", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 55.0, "jednostka": "g"}, {"skladnik": "Ser twarogowy półtłusty bez laktozy", "ilosc": 98.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Maliny świeże lub mrożone", "ilosc": 100.0, "jednostka": "g"}], "Kanapka z pastą z awokado i tuńczykiem": [{"skladnik": "Chleb pszenny", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Tuńczyk w sosie własnym", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Awokado", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz biały", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 1.0, "jednostka": "szt"}], "Złota owsianka z malinami": [{"skladnik": "Płatki owsiane górskie", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Kurkuma", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Cynamon mielony", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Imbir mielony", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Maliny świeże lub mrożone", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Płatki migdałów", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Skórka z pomarańczy", "ilosc": 1.5, "jednostka": "g"}], "Kanapki z jajkiem i hummusem": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Hummus", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Rukola", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 5.0, "jednostka": "g"}], "Placuszki z serka wiejskiego bez laktozy": [{"skladnik": "Serek wiejski bez laktozy", "ilosc": 105.0, "jednostka": "g"}, {"skladnik": "Mąka orkiszowa biała", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Erytrol", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Proszek do pieczenia", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Maliny świeże lub mrożone", "ilosc": 150.0, "jednostka": "g"}], "Owsianka banoffee": [{"skladnik": "Płatki owsiane górskie", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 95.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Pudding proteinowy smak słony karmel Go active", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Migdały", "ilosc": 5.0, "jednostka": "g"}], "Owsianka z kawałkami kiwi oraz borówkami": [{"skladnik": "Płatki owsiane górskie", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Kiwi", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Borówki amerykańskie, świeże lub mrożone", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Migdały", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}], "Ryż na słodko": [{"skladnik": "Ryż basmati", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Cynamon", "ilosc": 1.0, "jednostka": "g"}], "Sałatka z tuńczykiem, ryżem, papryką czerwoną oraz kukurydzą konserwową": [{"skladnik": "Ryż basmati", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Tuńczyk w sosie własnym", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Kapary", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Seler naciowy", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Kukurydza konserwowa", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Majonez", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Musztarda", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 12.0, "jednostka": "g"}], "Kanapka z pastą z jajka oraz awokado": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Awokado", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 0.375, "jednostka": "szt"}], "Skyrowe omleciki z miodem oraz borówkami (2 porcje)": [{"skladnik": "Jogurt skyr bez laktozy", "ilosc": 210.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Mąka orkiszowa biała", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Ksylitol", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Proszek do pieczenia", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 24.0, "jednostka": "g"}, {"skladnik": "Borówki amerykańskie, świeże lub mrożone", "ilosc": 150.0, "jednostka": "g"}], "Frittata z pieczarkami, szpinakiem oraz serem typu feta": [{"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Serek wiejski bez laktozy", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Pieczarki uprawne", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Szpinak", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Ser typu Feta", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Czosnek granulowany", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}], "Pizza z serem wegańskim (2 porcje)": [{"skladnik": "Placek pszenny Piadina", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Passata pomidorowa", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Oregano suszone", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Bazylia suszona", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Czosnek granulowany", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 170.0, "jednostka": "g"}, {"skladnik": "Oliwki czarne", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Wegański SERio w plastrach", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Rukola", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Kanapki w greckim stylu": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Ser typu Feta", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Oregano suszone", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Sos balsamiczny", "ilosc": 10.0, "jednostka": "g"}], "Sałatka z ciecierzycą, pomidorkami koktajlowymi, ogórkiem oraz papryką czerwoną": [{"skladnik": "Ciecierzyca konserwowa", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Papryka wędzona", "ilosc": 0.5, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Miks sałat", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 6.0, "jednostka": "g"}], "Bajgiel z kremowym sosem": [{"skladnik": "Bajgiel z sezamem", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Ser halloumi", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Rukola", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 0.25, "jednostka": "szt"}, {"skladnik": "Awokado", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Musztarda", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Chrupiące tosty z serkiem, szpinakiem i pomidorem": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Szpinak", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Serek śmietankowy", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Ser mozzarella kulka", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 0.5, "jednostka": "szt"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Tosty francuskie z puddingiem proteinowym i owocami": [{"skladnik": "Chleb żytni razowy", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Przyprawa do pierników", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Pudding proteinowy smak waniliowy Go active", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Maliny świeże lub mrożone", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 6.0, "jednostka": "g"}], "Słodki omlet z musem owocowym": [{"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Mąka pszenna typ 500", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 55.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 7.5, "jednostka": "g"}, {"skladnik": "Jogurt skyr sojowy", "ilosc": 65.0, "jednostka": "g"}, {"skladnik": "Maliny świeże lub mrożone", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}], "Tortilla z serkiem śmietankowym, pstrągiem wędzonym oraz szpinakiem": [{"skladnik": "Tortilla pełnoziarnista", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Serek śmietankowy bez laktozy", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Szpinak", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Pstrąg wędzony", "ilosc": 110.0, "jednostka": "g"}, {"skladnik": "Ser mozzarella kulka", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}], "Maślankowe placuszki z owocami (liczba porcji: 2)": [{"skladnik": "Mąka pszenna pełnoziarnista", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Maślanka 1.5%", "ilosc": 250.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Proszek do pieczenia", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Ksylitol", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Borówki amerykańskie, świeże lub mrożone", "ilosc": 150.0, "jednostka": "g"}], "Sałatka grecka z mozzarellą oraz chlebem razowym": [{"skladnik": "Miks sałat", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Ser mozzarella kulka", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Oliwki zielone", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Oregano suszone", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Serek waniliowy z gorzką czekoladą oraz bananem": [{"skladnik": "Jogurt roślinny", "ilosc": 185.0, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 0.5, "jednostka": "g"}, {"skladnik": "Czekolada gorzka 70%", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Płatki migdałów", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Wafle ryżowe", "ilosc": 20.0, "jednostka": "g"}], "Wiosenny serek wiejski z ogórkiem, papryką czerwoną oraz rzodkiewką i pieczywem": [{"skladnik": "Serek wiejski bez laktozy", "ilosc": 250.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Rzodkiewka", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Masło extra", "ilosc": 10.0, "jednostka": "g"}], "Chrupiące kanapki na słodko z serkiem i gruszką": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Serek śmietankowy bez laktozy", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Cynamon", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Gruszka", "ilosc": 130.0, "jednostka": "g"}], "Owsianka a la Mars": [{"skladnik": "Płatki owsiane górskie", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Czekolada gorzka 70%", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 140.0, "jednostka": "g"}], "Sałatka makaronowa z brokułem oraz słonecznikiem": [{"skladnik": "Brokuł, świeży lub mrożony", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Tofu wędzone", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sos sojowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Nasiona słonecznika", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr sojowy", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Majonez wegański", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Zioła prowansalskie", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Cebula czerwona", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}], "Bananowe placuszki z mąki owsianej": [{"skladnik": "Płatki owsiane górskie", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Cynamon", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Mieszanka orzechów", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Maliny świeże lub mrożone", "ilosc": 75.0, "jednostka": "g"}], "Serek wiejski z malinami, borówkami oraz masłem orzechowym": [{"skladnik": "Serek wiejski bez laktozy", "ilosc": 210.0, "jednostka": "g"}, {"skladnik": "Płatki owsiane górskie", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Borówki amerykańskie, świeże lub mrożone", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Maliny świeże lub mrożone", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Mięta", "ilosc": 1.0, "jednostka": "g"}], "Sałatka z tuńczykiem i ryżem": [{"skladnik": "Ryż basmati", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Tuńczyk w sosie własnym", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 55.0, "jednostka": "g"}, {"skladnik": "Majonez", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Pieczona owsianka z jabłkiem oraz cynamonem (liczba porcji: 2)": [{"skladnik": "Płatki owsiane górskie", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Proszek do pieczenia", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Cynamon", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Gałka muszkatałowa", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 190.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 36.0, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Jabłko", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 280.0, "jednostka": "g"}], "Pieczone syrniki z owocami (liczba porcji: 2)": [{"skladnik": "Ser twarogowy półtłusty bez laktozy", "ilosc": 1.0, "jednostka": "opakowanie"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Erytrol", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Mąka orkiszowa biała", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Maliny świeże lub mrożone", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 60.0, "jednostka": "g"}], "Pieczywo z wiosennym serkiem wiejskim bez laktozy, rzodkiewką i ogórkiem": [{"skladnik": "Serek wiejski bez laktozy", "ilosc": 210.0, "jednostka": "g"}, {"skladnik": "Rzodkiewka", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Koper posiekany", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}], "Placuszki owsiane z gorzką czekoladą oraz borówkami": [{"skladnik": "Banan", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Mąka owsiana pełnoziarnista", "ilosc": 36.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Borówki amerykańskie, świeże lub mrożone", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Czekolada gorzka 70%", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 15.0, "jednostka": "g"}], "Jajecznica z cukinią": [{"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Cukinia", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Japoński omlet": [{"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Roszponka", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Rzodkiewka", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Majonez wegański", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Sos sojowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 60.0, "jednostka": "g"}], "Omlet na słodko z bananem (495 kcal)": [{"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Mąka pszenna pełnoziarnista", "ilosc": 23.0, "jednostka": "g"}, {"skladnik": "Wiórki kokosowe", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Kakao", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Truskawki, świeże lub mrożone", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 55.0, "jednostka": "g"}], "Grzanki z tuńczykiem i pomidorami": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Tuńczyk w sosie własnym", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Cebula dymka", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Kanapka z jajkiem i szynką z kurczaka": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Serek śmietankowy bez laktozy", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Szynka z kurczaka", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Pomidor", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Rzodkiewka", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 15.0, "jednostka": "g"}], "Kanapki z jajkiem oraz awokado": [{"skladnik": "Awokado", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Rzodkiewka", "ilosc": 105.0, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Oregano suszone", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 10.0, "jednostka": "g"}], "Sałatka curry z kurczakiem oraz ananasem": [{"skladnik": "Makaron orzo", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Mięso z piersi kurczaka", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Ananas świeży lub mrożony", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Majonez", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Curry przyprawa", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Kolendra świeża", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 6.0, "jednostka": "g"}], "Pieczona owsianka z jagodami (liczba porcji: 2)": [{"skladnik": "Płatki owsiane górskie", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Proszek do pieczenia", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Cynamon mielony", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 190.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 36.0, "jednostka": "g"}, {"skladnik": "Wanilia ekstrakt", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Jagody świeże lub mrożone", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 280.0, "jednostka": "g"}], "Tortilla z twarożkiem, szynką, sałatą i ogórkiem": [{"skladnik": "Tortilla pszenna", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Serek wiejski bez laktozy", "ilosc": 95.0, "jednostka": "g"}, {"skladnik": "Szynka z kurczaka", "ilosc": 65.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Miks sałat", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Koper posiekany", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz biały", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}], "Nocna owsianka z morelami oraz orzechami pistacjowymi": [{"skladnik": "Płatki owsiane górskie", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Nasiona chia", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Morele świeże lub mrożone", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Orzechy pistacjowe niesolone", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}], "Borówkowa owsianka na zimno": [{"skladnik": "Płatki owsiane górskie", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Nasiona chia", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Borówki amerykańskie, świeże lub mrożone", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Cynamon mielony", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Orzechy włoskie", "ilosc": 15.0, "jednostka": "g"}], "Owsianka a la Snickers": [{"skladnik": "Płatki owsiane górskie", "ilosc": 35.0, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 95.0, "jednostka": "g"}, {"skladnik": "Czekolada gorzka 70%", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Banan", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Orzechy arachidowe", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 140.0, "jednostka": "g"}], "Koktajl orzechowo-bananowy": [{"skladnik": "Banan", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 235.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Orzechy nerkowca", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Masło orzechowe", "ilosc": 10.0, "jednostka": "g"}], "Kanapki z szynką, jajkiem i ogórkiem kiszonym": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Majonez wegański", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Szynka z kurczaka", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Ogórek kiszony", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 1.0, "jednostka": "szt"}], "Pasta z jajek z rzodkiewką,, ogórkiem, szczypiorkiem, i pieczywem": [{"skladnik": "Chleb żytni razowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Rukola", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Rzodkiewka", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Majonez wegański", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Szczypiorek siekany", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}], "Czerwone curry z ryżem": [{"skladnik": "Cukinia", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Pieczarki uprawne", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Mleczko kokosowe 12%", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek świeży", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Imbir", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Ciecierzyca konserwowa", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Pomidory z puszki", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Sos sojowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Curry przyprawa", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Ryż basmati", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Leczo z tofu": [{"skladnik": "Tofu naturalne", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Pomidory z puszki", "ilosc": 300.0, "jednostka": "g"}, {"skladnik": "Koncentrat pomidorowy 30%", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 170.0, "jednostka": "g"}, {"skladnik": "Cukinia", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Bazylia świeża", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Bulion warzywny (po rozrobieniu ze słoiczka)", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Papryka ostra suszona", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Ryż basmati", "ilosc": 50.0, "jednostka": "g"}], "Chłodnik ze szpinaku": [{"skladnik": "Szpinak", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Bulion warzywny (po rozrobieniu ze słoiczka)", "ilosc": 300.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 375.0, "jednostka": "g"}, {"skladnik": "Koper posiekany", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.5, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.5, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Ziemniaki", "ilosc": 210.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}], "Kremowy makaron z pstrągiem wędzonym i szpinakiem": [{"skladnik": "Makaron pełnoziarnisty", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Serek śmietankowy bez laktozy", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Pstrąg wędzony na zimno", "ilosc": 110.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 24.0, "jednostka": "g"}, {"skladnik": "Szpinak", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.5, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.5, "jednostka": "g"}, {"skladnik": "Czosnek świeży", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 120.0, "jednostka": "g"}], "Pieczone tofu z sosem musztardowym": [{"skladnik": "Ryż basmati", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Brokuł, świeży lub mrożony", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Tofu naturalne", "ilosc": 225.0, "jednostka": "g"}, {"skladnik": "Sos sojowy", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Musztarda", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Syrop klonowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Czosnek świeży", "ilosc": 6.0, "jednostka": "g"}], "Zapiekane pieczarki portobello z farszem z jajek": [{"skladnik": "Ziemniaki", "ilosc": 280.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Pieczarki portobello", "ilosc": 300.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Seler naciowy", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Płatki owsiane górskie", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Jogurt roślinny", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Chrzan (tarty)", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Pieczony dorsz z ryżem oraz burakiem": [{"skladnik": "Ryż basmati", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Burak surowy", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Dorsz świeży", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Tymianek suszony", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 20.0, "jednostka": "g"}], "Gulasz z ciecierzycy": [{"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Kasza jęczmienna pęczak", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Cukinia", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek świeży", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Ciecierzyca sucha", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Marchew", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Pomidory z puszki", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Bulion warzywny (po rozrobieniu ze słoiczka)", "ilosc": 250.0, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Tymianek suszony", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Klejące ostre tofu": [{"skladnik": "Tofu naturalne", "ilosc": 270.0, "jednostka": "g"}, {"skladnik": "Mąka ziemniaczana", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sos Sriracha", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Passata pomidorowa", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Syrop klonowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Ryż basmati", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Brokuł, świeży lub mrożony", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 10.0, "jednostka": "g"}], "Tortilla z ciecierzycą, cukinią, bakłażanem oraz papryką czerwoną i sosem jogurtowym": [{"skladnik": "Ciecierzyca konserwowa", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Cukinia", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Bakłażan", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Marchew", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Papryka wędzona", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Kumin", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Tortilla pszenna", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Jogurt roślinny", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek świeży", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Kotleciki jajeczne z pieczarkami": [{"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Pieczarki uprawne", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Bułka tarta", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Jogurt roślinny", "ilosc": 55.0, "jednostka": "g"}, {"skladnik": "Koper posiekany", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Ryż basmati", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Czosnek granulowany", "ilosc": 0.25, "jednostka": "g"}], "Sałatka z jabłkiem, burakiem oraz serkiem wiejskim bez laktozy": [{"skladnik": "Jabłko", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Buraki, gotowane w wodzie", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Serek wiejski bez laktozy", "ilosc": 210.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Chleb pszenny", "ilosc": 90.0, "jednostka": "g"}], "Ryż z mrożonką chińską z tofu": [{"skladnik": "Ryż basmati", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Warzywa chińskie mrożone", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Mleczko kokosowe 12%", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Koncentrat pomidorowy 30%", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Curry", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Tofu naturalne", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}], "Kolorowy ryż z jajkiem": [{"skladnik": "Ryż basmati", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Groszek zielony konserwowy", "ilosc": 180.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Kumin", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Płatki chilli", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Sos ostrygowy", "ilosc": 15.0, "jednostka": "g"}], "Wegańska carbonara z tofu": [{"skladnik": "Tofu naturalne", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Płatki drożdżowe", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Sos sojowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Makaron spaghetti pełnoziarnisty", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Śmietana wegańska", "ilosc": 60.0, "jednostka": "g"}], "Dorsz gotowany na parze z kuskusem": [{"skladnik": "Dorsz", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Zioła prowansalskie", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Marchew", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Seler korzeniowy", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Kasza kuskus", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}], "Sałatka z tofu z sosem sezamowym": [{"skladnik": "Kapusta czerwona", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Marchew", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Kasza jaglana", "ilosc": 65.0, "jednostka": "g"}, {"skladnik": "Tofu naturalne", "ilosc": 180.0, "jednostka": "g"}, {"skladnik": "Papryka ostra suszona", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Tahini", "ilosc": 18.0, "jednostka": "g"}, {"skladnik": "Sos sojowy", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 18.0, "jednostka": "g"}, {"skladnik": "Woda", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Sałatka z tuńczykiem, ogórkiem, selerem naciowym, kukurydzą i grzankami": [{"skladnik": "Chleb żytni razowy", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Seler naciowy", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Kukurydza konserwowa", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Tuńczyk w sosie własnym", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Musztarda", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 7.5, "jednostka": "g"}], "Pieczone warzywa z mleczkiem kokosowym i pomidorkami koktajlowymi": [{"skladnik": "Batat", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Ciecierzyca konserwowa", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Mleczko kokosowe 12%", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Cukinia", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Szpinak", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Czosnek granulowany", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Pieczony łosoś z puree z selera i pieczonymi ziemniakami": [{"skladnik": "Ziemniaki", "ilosc": 210.0, "jednostka": "g"}, {"skladnik": "Łosoś świeży", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Seler korzeniowy", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Brokuł, świeży lub mrożony", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Chrzan (tarty)", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Mleko bez laktozy 2%", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Krem marchewkowy": [{"skladnik": "Marchew", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Kurkuma", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Imbir", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Bulion warzywny", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Mleczko kokosowe 12%", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Tofu naturalne", "ilosc": 180.0, "jednostka": "g"}, {"skladnik": "Kiełki słonecznika", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 120.0, "jednostka": "g"}], "Curry z ciecierzycy oraz kalafiora": [{"skladnik": "Ryż basmati", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Ciecierzyca konserwowa", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Mleczko kokosowe 12%", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Marchew", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Kalafior, świeży lub mrożony", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Imbir", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Kolendra świeża", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Curry", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Papryka ostra suszona", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Kumin", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Cynamon", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Odżywka białkowa", "ilosc": 35.0, "jednostka": "g"}], "Tortilla z ciecierzycą, cukinią oraz awokado": [{"skladnik": "Ciecierzyca konserwowa", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Cebula czerwona", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Passata pomidorowa", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Cukinia", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Tortilla pełnoziarnista", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Awokado", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Papryka wędzona", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Kolendra suszona", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Makaron z tuńczykiem, szpinakiem oraz pomidorkami koktajlowymi": [{"skladnik": "Tuńczyk w sosie własnym", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Brokuł, świeży lub mrożony", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Makaron pełnoziarnisty", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Szpinak", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Gulasz z ciecierzycy z ziemniakami oraz kalafiorem": [{"skladnik": "Ciecierzyca konserwowa", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Pomidory z puszki", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Ziemniaki", "ilosc": 210.0, "jednostka": "g"}, {"skladnik": "Kalafior, świeży lub mrożony", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Kolendra świeża", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Papryka wędzona", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Makaron azjatycki z jajkiem": [{"skladnik": "Warzywa chińskie mrożone", "ilosc": 300.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sos sojowy", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Czosnek granulowany", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Imbir mielony", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 0.5, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Szczypiorek siekany", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Makaron Chow Mein", "ilosc": 70.0, "jednostka": "g"}], "Sałatka z tuńczykiem i jajkiem": [{"skladnik": "Tuńczyk w sosie własnym", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 2.0, "jednostka": "szt"}, {"skladnik": "Ogórek świeży", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Rzodkiewka", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Miód", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Chleb żytni razowy", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 5.0, "jednostka": "g"}], "Zupa koperkowa z jajkiem": [{"skladnik": "Bulion warzywny", "ilosc": 400.0, "jednostka": "g"}, {"skladnik": "Ziemniaki", "ilosc": 280.0, "jednostka": "g"}, {"skladnik": "Koper posiekany", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Jajko kurze całe", "ilosc": 3.0, "jednostka": "szt"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Makaron z tuńczykiem, oliwkami, kaparami oraz pokrojone pomidorki": [{"skladnik": "Makaron pełnoziarnisty", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Tuńczyk w sosie własnym", "ilosc": 180.0, "jednostka": "g"}, {"skladnik": "Oliwki zielone", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Kapary", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 140.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Natka pietruszki posiekana", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Kopytka na słodko z twarogiem i cynamonową marchwią": [{"skladnik": "Kopytka", "ilosc": 90.0, "jednostka": "g"}, {"skladnik": "Marchew", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Woda", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Cynamon", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Ser twarogowy półtłusty bez laktozy", "ilosc": 182.0, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Erytrol", "ilosc": 5.0, "jednostka": "g"}], "Gnocchi w kremowym sosie + skyr": [{"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Szpinak", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Śmietana wegańska", "ilosc": 105.0, "jednostka": "g"}, {"skladnik": "Skórka z cytryny", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Gnocchi", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Vermezan z nerkowców", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Bazylia świeża", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Jogurt skyr bez laktozy", "ilosc": 245.0, "jednostka": "g"}], "Curry z dyni (liczba porcji: 2)": [{"skladnik": "Dynia świeża lub mrożona", "ilosc": 500.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Curry", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Pomidorki koktajlowe", "ilosc": 160.0, "jednostka": "g"}, {"skladnik": "Ananas świeży lub mrożony", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Mleczko kokosowe 12%", "ilosc": 160.0, "jednostka": "g"}, {"skladnik": "Ciecierzyca konserwowa", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Kolendra świeża", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Ryż basmati", "ilosc": 130.0, "jednostka": "g"}], "Kurczak Fajita": [{"skladnik": "Mięso z piersi kurczaka", "ilosc": 170.0, "jednostka": "g"}, {"skladnik": "Olej rzepakowy", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Cebula czerwona", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Limonka", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Kolendra świeża", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Kumin", "ilosc": 1.0, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Papryka ostra suszona", "ilosc": 0.5, "jednostka": "g"}, {"skladnik": "Ryż basmati", "ilosc": 80.0, "jednostka": "g"}], "Makaron azjatycki z kurczakiem": [{"skladnik": "Makaron pełnoziarnisty", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Mięso z piersi kurczaka", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Marchew", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Czosnek świeży", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Papryczka chilli", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Imbir", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sos sojowy", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Szczypiorek siekany", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 1.5, "jednostka": "g"}], "Kurczak z tymiankiem suszonym, pieczonymi ziemniakami i surówką z marchwi i jabłka": [{"skladnik": "Mięso z piersi kurczaka", "ilosc": 175.0, "jednostka": "g"}, {"skladnik": "Tymianek suszony", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Czosnek świeży", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Ziemniaki", "ilosc": 280.0, "jednostka": "g"}, {"skladnik": "Marchew", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Jabłko", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 42.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Domowa zupa pomidorowa z klopsikami": [{"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek świeży", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Mięso mielone wieprzowe (z łopatki)", "ilosc": 160.0, "jednostka": "g"}, {"skladnik": "Pomidory z puszki", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Oregano suszone", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Bazylia suszona", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Bulion warzywny (po rozrobieniu ze słoiczka)", "ilosc": 375.0, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Makaron orzo", "ilosc": 70.0, "jednostka": "g"}], "Burrito": [{"skladnik": "Mięso mielone wieprzowe (z łopatki)", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Jogurt roślinny", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Sok z limonki", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Kumin", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Czosnek granulowany", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Ryż basmati", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Kolendra świeża", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Papryczka chilli", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Passata pomidorowa", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Cebula czerwona", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Tortilla pełnoziarnista", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Burger wołowy z pikantną salsą": [{"skladnik": "Bułka grahamka", "ilosc": 70.0, "jednostka": "g"}, {"skladnik": "Mięso mielone wołowe", "ilosc": 175.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 0.5, "jednostka": "szt"}, {"skladnik": "Cebula dymka", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Kolendra świeża", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Papryczka chilli", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sok z cytryny", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Ogórek konserwowy", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Musztarda", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Ketchup", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Miks sałat", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}], "Fit Kebab": [{"skladnik": "Tortilla pełnoziarnista", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Mięso z piersi kurczaka", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Papryka słodka", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Bazylia suszona", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Tymianek suszony", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Kumin", "ilosc": 1.5, "jednostka": "g"}, {"skladnik": "Sos sojowy", "ilosc": 25.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 2.5, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Czosnek świeży", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Musztarda", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Kapusta czerwona", "ilosc": 35.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Cebula czerwona", "ilosc": 80.0, "jednostka": "g"}, {"skladnik": "Sałata rzymska", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Sos Sriracha", "ilosc": 10.0, "jednostka": "g"}], "Burger curry z mięsa": [{"skladnik": "Mięso mielone z indyka", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Bułka owsiana", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Imbir", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Curry", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Kolendra świeża", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Jogurt naturalny bez laktozy", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Majonez", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Dżem morelowy, niskosłodzony", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Sos Sriracha", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Pomidor", "ilosc": 0.5, "jednostka": "szt"}, {"skladnik": "Olej rzepakowy", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}], "Chilli con carne z ryżem": [{"skladnik": "Fasola czarna konserwowa", "ilosc": 120.0, "jednostka": "g"}, {"skladnik": "Mięso mielone z indyka", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Pomidory z puszki", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Papryczka chilli", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Kumin", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Kakao", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Ryż basmati", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Woda", "ilosc": 125.0, "jednostka": "g"}, {"skladnik": "Papryka wędzona", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Kolendra świeża", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}], "Kurczak w kremowym sosie curry": [{"skladnik": "Mięso z piersi kurczaka", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Mleczko kokosowe 12%", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Ryż basmati", "ilosc": 75.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 40.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 6.0, "jednostka": "g"}, {"skladnik": "Curry", "ilosc": 4.0, "jednostka": "g"}, {"skladnik": "Kurkuma", "ilosc": 2.0, "jednostka": "g"}, {"skladnik": "Papryczka chilli", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Pieprz cayenne", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Imbir", "ilosc": 5.0, "jednostka": "g"}, {"skladnik": "Skórka z cytryny", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 150.0, "jednostka": "g"}], "Krupnik z kaszą jaglaną": [{"skladnik": "Kasza jaglana", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Bulion warzywny", "ilosc": 375.0, "jednostka": "g"}, {"skladnik": "Marchew", "ilosc": 160.0, "jednostka": "g"}, {"skladnik": "Pietruszka korzeń", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Seler korzeniowy", "ilosc": 50.0, "jednostka": "g"}, {"skladnik": "Mięso z piersi kurczaka", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.5, "jednostka": "g"}, {"skladnik": "Koper posiekany", "ilosc": 8.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}], "Leczo z indykiem, selerem naciowym oraz kaszą gryczaną": [{"skladnik": "Mięso z piersi indyka", "ilosc": 175.0, "jednostka": "g"}, {"skladnik": "Kasza gryczana", "ilosc": 60.0, "jednostka": "g"}, {"skladnik": "Seler naciowy", "ilosc": 45.0, "jednostka": "g"}, {"skladnik": "Papryka czerwona", "ilosc": 85.0, "jednostka": "g"}, {"skladnik": "Cebula", "ilosc": 20.0, "jednostka": "g"}, {"skladnik": "Czosnek", "ilosc": 3.0, "jednostka": "g"}, {"skladnik": "Passata pomidorowa", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 15.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Pieprz czarny", "ilosc": 0.25, "jednostka": "g"}, {"skladnik": "Zioła prowansalskie", "ilosc": 1.5, "jednostka": "g"}], "Sałatka z rukolą, fetą i granatem": [{"skladnik": "Rukola", "ilosc": 100.0, "jednostka": "g"}, {"skladnik": "Ogórek świeży", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Pomidor koktajlowy", "ilosc": 200.0, "jednostka": "g"}, {"skladnik": "Cebula czerwona", "ilosc": 0.25, "jednostka": "szt"}, {"skladnik": "Ser typu Feta", "ilosc": 150.0, "jednostka": "g"}, {"skladnik": "Granat", "ilosc": 1.0, "jednostka": "szt"}, {"skladnik": "Orzechy włosksie", "ilosc": 30.0, "jednostka": "g"}, {"skladnik": "Oliwa z oliwek", "ilosc": 45.0, "jednostka": "ml"}, {"skladnik": "Sok z cytryny", "ilosc": 20.0, "jednostka": "ml"}, {"skladnik": "Miód", "ilosc": 10.0, "jednostka": "g"}, {"skladnik": "Musztarda", "ilosc": 12.0, "jednostka": "g"}, {"skladnik": "Sól", "ilosc": 0.5, "jednostka": "g"}]}};
+
+        const DAYS = [
+            { id: 'mon', name: 'Poniedziałek' },
+            { id: 'tue', name: 'Wtorek' },
+            { id: 'wed', name: 'Środa' },
+            { id: 'thu', name: 'Czwartek' },
+            { id: 'fri', name: 'Piątek' },
+            { id: 'sat', name: 'Sobota' },
+            { id: 'sun', name: 'Niedziela' }
+        ];
+
+        const MEALS = [
+            { id: 'breakfast', name: 'Śniadanie' },
+            { id: 'lunch', name: 'Obiad' },
+            { id: 'dinner', name: 'Kolacja' }
+        ];
+
+        // Przelicznik gramów na sztuki
+        const UNIT_CONVERSIONS = {
+            'banan': { grams: 120, unit: 'szt' },
+            'jabłko': { grams: 150, unit: 'szt' },
+            'gruszka': { grams: 130, unit: 'szt' },
+            'papryka czerwona': { grams: 170, unit: 'szt' },
+            'ogórek świeży': { grams: 150, unit: 'szt' }
+        };
+
+        // Funkcja konwertująca gramy na sztuki gdzie to możliwe
+        function convertUnits(name, amount, unit) {
+            const nameLower = name.toLowerCase();
+            
+            for (const [key, conversion] of Object.entries(UNIT_CONVERSIONS)) {
+                if (nameLower.includes(key) && unit === 'g') {
+                    const pieces = Math.ceil(amount / conversion.grams);
+                    return {
+                        amount: pieces,
+                        unit: conversion.unit,
+                        original: `(${Math.round(amount)}g)`
+                    };
+                }
+            }
+            
+            return {
+                amount: Math.round(amount * 10) / 10,
+                unit: unit,
+                original: null
+            };
+        }
+
+        // Załaduj zapisany plan
+        function loadPlan() {
+            const saved = localStorage.getItem('mealPlan');
+            return saved ? JSON.parse(saved) : {};
+        }
+
+        // Zapisz plan
+        function savePlan(plan) {
+            localStorage.setItem('mealPlan', JSON.stringify(plan));
+            updateShoppingList();
+        }
+
+        // Załaduj zaznaczone zakupy
+        function loadCheckedItems() {
+            const saved = localStorage.getItem('checkedItems');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        // Zapisz zaznaczone zakupy
+        function saveCheckedItems(items) {
+            localStorage.setItem('checkedItems', JSON.stringify(items));
+        }
+
+        // Załaduj posiadane ilości
+        function loadOwnedAmounts() {
+            const saved = localStorage.getItem('ownedAmounts');
+            return saved ? JSON.parse(saved) : {};
+        }
+
+        // Zapisz posiadane ilości
+        function saveOwnedAmounts(amounts) {
+            localStorage.setItem('ownedAmounts', JSON.stringify(amounts));
+        }
+
+        let currentPlan = loadPlan();
+        let checkedItems = loadCheckedItems();
+        let ownedAmounts = loadOwnedAmounts();
+
+        // Przełączanie zakładek
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            
+            document.querySelector(`.tab:nth-child(${tabName === 'plan' ? 1 : 2})`).classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            if (tabName === 'shopping') {
+                updateShoppingList();
+            }
+        }
+
+        // Renderuj plan
+        function renderPlan() {
+            const container = document.getElementById('plan-container');
+            container.innerHTML = '';
+
+            DAYS.forEach(day => {
+                const card = document.createElement('div');
+                card.className = 'day-card';
+                
+                let html = `<div class="day-header">${day.name}</div>`;
+                
+                MEALS.forEach(meal => {
+                    const key1 = `${day.id}-${meal.id}-person1`;
+                    const key2 = `${day.id}-${meal.id}-person2`;
+                    
+                    html += `
+                        <div class="meal-row">
+                            <div class="meal-label">${meal.name}</div>
+                            <div class="meal-select-container">
+                                <div>
+                                    <div class="person-label">Osoba 1</div>
+                                    <div class="select-wrapper">
+                                        <select onchange="updateMeal('${key1}', this.value)">
+                                            <option value="">Wybierz...</option>
+                                            ${PRZEPISY_DATA.przepisy.map(p => 
+                                                `<option value="${p}" ${currentPlan[key1] === p ? 'selected' : ''}>${p}</option>`
+                                            ).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="person-label">Osoba 2</div>
+                                    <div class="select-wrapper">
+                                        <select onchange="updateMeal('${key2}', this.value)">
+                                            <option value="">Wybierz...</option>
+                                            ${PRZEPISY_DATA.przepisy.map(p => 
+                                                `<option value="${p}" ${currentPlan[key2] === p ? 'selected' : ''}>${p}</option>`
+                                            ).join('')}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+        }
+
+        // Aktualizuj wybór posiłku
+        function updateMeal(key, value) {
+            if (value === '') {
+                delete currentPlan[key];
+            } else {
+                currentPlan[key] = value;
+            }
+            savePlan(currentPlan);
+        }
+
+        // Oblicz listę zakupów
+        function calculateShoppingList() {
+            const ingredients = {};
+            
+            Object.values(currentPlan).forEach(recipeName => {
+                const recipeIngredients = PRZEPISY_DATA.skladniki[recipeName];
+                if (!recipeIngredients) return;
+                
+                recipeIngredients.forEach(ing => {
+                    const key = `${ing.skladnik}|||${ing.jednostka}`;
+                    if (!ingredients[key]) {
+                        ingredients[key] = {
+                            name: ing.skladnik,
+                            amount: 0,
+                            unit: ing.jednostka
+                        };
+                    }
+                    ingredients[key].amount += ing.ilosc;
+                });
+            });
+            
+            return Object.values(ingredients);
+        }
+
+        // Kategoryzuj składniki
+        function categorizeIngredients(ingredients) {
+            const categories = {
+                'Warzywa': ['cukinia', 'pomidor', 'rukola', 'sałata', 'ogórek', 'papryka', 'bakłażan', 'cebula', 'czosnek', 'marchew', 'brokuł', 'kalafior', 'szpinak', 'burak', 'por'],
+                'Owoce': ['jabłko', 'banan', 'gruszka', 'śliwka', 'malina', 'borówka', 'truskawka', 'granat', 'pomarańcza', 'cytryna'],
+                'Nabiał i jaja': ['jajko', 'mleko', 'jogurt', 'ser', 'twaróg', 'feta', 'masło', 'śmietana', 'skyr'],
+                'Mięso i ryby': ['kurczak', 'wołowina', 'wieprzowina', 'łosoś', 'tuńczyk', 'makrela', 'dorsz'],
+                'Pieczywo': ['chleb', 'bułka', 'tortilla', 'bajgiel', 'pita'],
+                'Kasze i płatki': ['ryż', 'kasza', 'płatki', 'makaron', 'quinoa'],
+                'Zioła i przyprawy': ['bazylia', 'pieprz', 'sól', 'cynamon', 'zioła', 'czosnek', 'papryka', 'oregano', 'tymianek', 'rozmaryn'],
+                'Orzechy i nasiona': ['orzechy', 'migdały', 'chia', 'słonecznik', 'dynia'],
+                'Oleje i tłuszcze': ['oliwa', 'olej', 'ocet', 'masło'],
+                'Inne': []
+            };
+            
+            const categorized = {};
+            
+            ingredients.forEach(ing => {
+                let found = false;
+                for (const [category, keywords] of Object.entries(categories)) {
+                    if (category === 'Inne') continue;
+                    if (keywords.some(kw => ing.name.toLowerCase().includes(kw))) {
+                        if (!categorized[category]) categorized[category] = [];
+                        categorized[category].push(ing);
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    if (!categorized['Inne']) categorized['Inne'] = [];
+                    categorized['Inne'].push(ing);
+                }
+            });
+            
+            return categorized;
+        }
+
+        // Aktualizuj posiadaną ilość
+        function updateOwned(key, value) {
+            const numValue = parseFloat(value) || 0;
+            if (numValue === 0) {
+                delete ownedAmounts[key];
+            } else {
+                ownedAmounts[key] = numValue;
+            }
+            saveOwnedAmounts(ownedAmounts);
+            updateShoppingList();
+        }
+
+        // Aktualizuj listę zakupów
+        function updateShoppingList() {
+            const list = document.getElementById('shopping-list');
+            const ingredients = calculateShoppingList();
+            
+            if (ingredients.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🛒</div>
+                        <div class="empty-state-text">Brak produktów do kupienia</div>
+                        <p style="margin-top: 8px; font-size: 14px;">Dodaj posiłki do planu</p>
+                    </div>
+                `;
+                updateStats(0, 0);
+                return;
+            }
+            
+            const categorized = categorizeIngredients(ingredients);
+            let html = '';
+            
+            // Nagłówki kolumn
+            html += `
+                <div class="shopping-header-row">
+                    <div></div>
+                    <div class="header-label" style="text-align: left; padding-left: 12px;">Produkt</div>
+                    <div class="header-label">Posiadane</div>
+                    <div class="header-label">Do kupienia</div>
+                </div>
+            `;
+            
+            let totalItems = 0;
+            let checkedCount = 0;
+            
+            Object.entries(categorized).sort().forEach(([category, items]) => {
+                html += `<div class="category-header">${category}</div>`;
+                items.sort((a, b) => a.name.localeCompare(b.name)).forEach(item => {
+                    const itemKey = `${item.name}|||${item.unit}`;
+                    const isChecked = checkedItems.includes(itemKey);
+                    const owned = ownedAmounts[itemKey] || 0;
+                    const toBuy = Math.max(0, item.amount - owned);
+                    
+                    if (toBuy > 0) totalItems++;
+                    if (isChecked) checkedCount++;
+                    
+                    const converted = convertUnits(item.name, item.amount, item.unit);
+                    const neededDisplay = converted.original 
+                        ? `${converted.amount} ${converted.unit} ${converted.original}`
+                        : `${converted.amount} ${converted.unit}`;
+                    
+                    const convertedToBuy = convertUnits(item.name, toBuy, item.unit);
+                    const toBuyDisplay = convertedToBuy.original
+                        ? `${convertedToBuy.amount} ${convertedToBuy.unit}`
+                        : `${convertedToBuy.amount} ${convertedToBuy.unit}`;
+                    
+                    html += `
+                        <div class="shopping-item ${isChecked ? 'checked' : ''}" data-key="${itemKey}">
+                            <div class="checkbox ${isChecked ? 'checked' : ''}" onclick="toggleItem('${itemKey}')"></div>
+                            <div class="item-info">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-details">Potrzebne: ${neededDisplay}</div>
+                            </div>
+                            <input type="number" 
+                                   class="item-input" 
+                                   value="${owned || ''}" 
+                                   placeholder="0"
+                                   onchange="updateOwned('${itemKey}', this.value)"
+                                   onclick="event.stopPropagation()">
+                            <div class="item-needed">${toBuyDisplay}</div>
+                        </div>
+                    `;
+                });
+            });
+            
+            list.innerHTML = html;
+            updateStats(totalItems, checkedCount);
+        }
+
+        // Przełącz zaznaczenie produktu
+        function toggleItem(key) {
+            const index = checkedItems.indexOf(key);
+            if (index > -1) {
+                checkedItems.splice(index, 1);
+            } else {
+                checkedItems.push(key);
+            }
+            saveCheckedItems(checkedItems);
+            updateShoppingList();
+        }
+
+        // Wyczyść zaznaczone produkty
+        function clearCheckedItems() {
+            if (checkedItems.length === 0) return;
+            if (confirm('Czy na pewno chcesz wyczyść wszystkie kupione produkty?')) {
+                checkedItems = [];
+                saveCheckedItems(checkedItems);
+                updateShoppingList();
+            }
+        }
+
+        // Aktualizuj statystyki
+        function updateStats(total, checked) {
+            document.getElementById('total-items').textContent = total;
+            document.getElementById('checked-items').textContent = checked;
+        }
+
+        // Inicjalizacja
+        renderPlan();
+        updateShoppingList();
+    </script>
+</body>
+</html>
