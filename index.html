@@ -1008,30 +1008,36 @@
             let totalItems = 0;
             let checkedCount = 0;
             
-            // Posortuj kategorie, ale dla każdej kategorii podziel na kupione i niekupione
-            Object.entries(categorized).sort().forEach(([category, items]) => {
-                // Podziel na niekupione i kupione
-                const uncheckedItems = [];
-                const checkedItemsList = [];
-                
+            // Zbierz wszystkie produkty z wszystkich kategorii
+            const allItems = [];
+            Object.entries(categorized).forEach(([category, items]) => {
                 items.forEach(item => {
-                    const itemKey = `${item.name}|||${item.unit}`;
-                    if (checkedItems.includes(itemKey)) {
-                        checkedItemsList.push(item);
-                    } else {
-                        uncheckedItems.push(item);
-                    }
+                    allItems.push(item);
                 });
-                
-                // Sortuj alfabetycznie w każdej grupie
-                uncheckedItems.sort((a, b) => a.name.localeCompare(b.name));
-                checkedItemsList.sort((a, b) => a.name.localeCompare(b.name));
-                
-                // Połącz: najpierw niekupione, potem kupione
-                const sortedItems = [...uncheckedItems, ...checkedItemsList];
-                
-                html += `<div class="category-header">${category}</div>`;
-                sortedItems.forEach(item => {
+            });
+            
+            // Podziel na niekupione i kupione
+            const uncheckedItems = [];
+            const checkedItemsList = [];
+            
+            allItems.forEach(item => {
+                const itemKey = `${item.name}|||${item.unit}`;
+                if (checkedItems.includes(itemKey)) {
+                    checkedItemsList.push(item);
+                } else {
+                    uncheckedItems.push(item);
+                }
+            });
+            
+            // Sortuj alfabetycznie w każdej grupie
+            uncheckedItems.sort((a, b) => a.name.localeCompare(b.name));
+            checkedItemsList.sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Połącz: najpierw niekupione, potem kupione
+            const sortedItems = [...uncheckedItems, ...checkedItemsList];
+            
+            // Wyświetl wszystkie produkty
+            sortedItems.forEach(item => {
                     const itemKey = `${item.name}|||${item.unit}`;
                     const isChecked = checkedItems.includes(itemKey);
                     const owned = ownedAmounts[itemKey] || 0;
@@ -1066,7 +1072,6 @@
                         </div>
                     `;
                 });
-            });
             
             list.innerHTML = html;
             updateStats(totalItems, checkedCount);
