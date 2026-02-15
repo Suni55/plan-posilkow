@@ -220,6 +220,60 @@
             font-weight: 400;
         }
 
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid var(--primary);
+            border-top: none;
+            border-radius: 0 0 12px 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid var(--bg-main);
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: var(--bg-main);
+        }
+
+        .autocomplete-item:active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .autocomplete-empty {
+            padding: 12px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-style: italic;
+        }
+
         .person-label {
             font-size: 11px;
             font-weight: 600;
@@ -746,36 +800,32 @@
                             <div class="meal-select-container">
                                 <div>
                                     <div class="person-label">Osoba 1</div>
-                                    <div class="select-wrapper">
+                                    <div class="autocomplete-wrapper">
                                         <input type="text" 
-                                               list="recipes-list-${key1}"
+                                               id="input-${key1}"
                                                class="recipe-input"
                                                value="${currentPlan[key1] || ''}"
                                                placeholder="Wpisz lub wybierz..."
-                                               onchange="updateMeal('${key1}', this.value)"
+                                               oninput="handleRecipeInput('${key1}', this.value)"
+                                               onfocus="showAutocomplete('${key1}', this.value)"
+                                               onblur="hideAutocompleteDelayed('${key1}')"
                                                autocomplete="off">
-                                        <datalist id="recipes-list-${key1}">
-                                            ${PRZEPISY_DATA.przepisy.map(p => 
-                                                `<option value="${p}">${p}</option>`
-                                            ).join('')}
-                                        </datalist>
+                                        <div id="list-${key1}" class="autocomplete-list"></div>
                                     </div>
                                 </div>
                                 <div>
                                     <div class="person-label">Osoba 2</div>
-                                    <div class="select-wrapper">
+                                    <div class="autocomplete-wrapper">
                                         <input type="text" 
-                                               list="recipes-list-${key2}"
+                                               id="input-${key2}"
                                                class="recipe-input"
                                                value="${currentPlan[key2] || ''}"
                                                placeholder="Wpisz lub wybierz..."
-                                               onchange="updateMeal('${key2}', this.value)"
+                                               oninput="handleRecipeInput('${key2}', this.value)"
+                                               onfocus="showAutocomplete('${key2}', this.value)"
+                                               onblur="hideAutocompleteDelayed('${key2}')"
                                                autocomplete="off">
-                                        <datalist id="recipes-list-${key2}">
-                                            ${PRZEPISY_DATA.przepisy.map(p => 
-                                                `<option value="${p}">${p}</option>`
-                                            ).join('')}
-                                        </datalist>
+                                        <div id="list-${key2}" class="autocomplete-list"></div>
                                     </div>
                                 </div>
                             </div>
@@ -788,12 +838,66 @@
             });
         }
 
+        // Obsługa wpisywania w pole przepisu
+        function handleRecipeInput(key, value) {
+            showAutocomplete(key, value);
+        }
+
+        // Pokaż listę autocomplete
+        function showAutocomplete(key, query) {
+            const listElement = document.getElementById(`list-${key}`);
+            if (!listElement) return;
+            
+            const filtered = PRZEPISY_DATA.przepisy.filter(p => 
+                p.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            if (filtered.length === 0 || (filtered.length === 1 && filtered[0] === query)) {
+                listElement.classList.remove('show');
+                return;
+            }
+            
+            let html = '';
+            filtered.slice(0, 50).forEach(recipe => {
+                html += `<div class="autocomplete-item" onmousedown="selectRecipe('${key}', '${recipe.replace(/'/g, "\\'")}')">
+                    ${recipe}
+                </div>`;
+            });
+            
+            listElement.innerHTML = html;
+            listElement.classList.add('show');
+        }
+
+        // Wybierz przepis z listy
+        function selectRecipe(key, recipe) {
+            const inputElement = document.getElementById(`input-${key}`);
+            if (inputElement) {
+                inputElement.value = recipe;
+            }
+            updateMeal(key, recipe);
+            hideAutocomplete(key);
+        }
+
+        // Ukryj listę autocomplete
+        function hideAutocomplete(key) {
+            const listElement = document.getElementById(`list-${key}`);
+            if (listElement) {
+                listElement.classList.remove('show');
+            }
+        }
+
+        // Ukryj z opóźnieniem (dla onblur)
+        function hideAutocompleteDelayed(key) {
+            setTimeout(() => hideAutocomplete(key), 200);
+        }
+
         // Aktualizuj wybór posiłku
         function updateMeal(key, value) {
-            if (value === '') {
+            const trimmedValue = value.trim();
+            if (trimmedValue === '' || !PRZEPISY_DATA.przepisy.includes(trimmedValue)) {
                 delete currentPlan[key];
             } else {
-                currentPlan[key] = value;
+                currentPlan[key] = trimmedValue;
             }
             savePlan(currentPlan);
         }
