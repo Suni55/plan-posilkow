@@ -274,6 +274,124 @@
             font-style: italic;
         }
 
+        .today-header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, #FF8F6B 100%);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .today-date {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .today-day {
+            font-size: 18px;
+            opacity: 0.9;
+        }
+
+        .meal-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .meal-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--bg-main);
+        }
+
+        .meal-icon {
+            font-size: 28px;
+        }
+
+        .meal-time {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .person-section {
+            margin-bottom: 16px;
+        }
+
+        .person-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .person-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .recipe-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            padding: 12px;
+            background: var(--bg-main);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .recipe-name:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(4px);
+        }
+
+        .recipe-name.empty {
+            color: var(--text-secondary);
+            font-style: italic;
+            cursor: default;
+        }
+
+        .recipe-name.empty:hover {
+            background: var(--bg-main);
+            color: var(--text-secondary);
+            transform: none;
+        }
+
+        .no-meals {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .no-meals-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .no-meals-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .no-meals-hint {
+            font-size: 14px;
+        }
+
         .person-label {
             font-size: 11px;
             font-weight: 600;
@@ -633,14 +751,20 @@
     </div>
 
     <div class="tabs">
-        <div class="tab active" onclick="switchTab('plan')">📅 Plan</div>
+        <div class="tab active" onclick="switchTab('today')">📅 Dzisiaj</div>
+        <div class="tab" onclick="switchTab('plan')">🗓️ Plan</div>
         <div class="tab" onclick="switchTab('shopping')">🛒 Zakupy</div>
         <div class="tab" onclick="switchTab('recipes')">📖 Przepisy</div>
     </div>
 
     <div class="content">
+        <!-- TAB: Dzisiaj -->
+        <div id="tab-today" class="tab-content active">
+            <div id="today-container"></div>
+        </div>
+
         <!-- TAB: Plan -->
-        <div id="tab-plan" class="tab-content active">
+        <div id="tab-plan" class="tab-content">
             <div class="stats" style="margin-bottom: 20px;">
                 <button class="btn-clear" onclick="clearPlan()" style="background: linear-gradient(135deg, #FF6B35 0%, #FF8F6B 100%);">
                     🗑️ Wyczyść cały plan
@@ -768,7 +892,7 @@
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             
-            const tabIndex = tabName === 'plan' ? 1 : tabName === 'shopping' ? 2 : 3;
+            const tabIndex = tabName === 'today' ? 1 : tabName === 'plan' ? 2 : tabName === 'shopping' ? 3 : 4;
             document.querySelector(`.tab:nth-child(${tabIndex})`).classList.add('active');
             document.getElementById(`tab-${tabName}`).classList.add('active');
 
@@ -776,6 +900,8 @@
                 updateShoppingList();
             } else if (tabName === 'recipes') {
                 renderRecipes();
+            } else if (tabName === 'today') {
+                renderToday();
             }
         }
 
@@ -1221,7 +1347,132 @@
             }
         }
 
+        // Renderuj widok Dzisiaj
+        function renderToday() {
+            const container = document.getElementById('today-container');
+            
+            // Pobierz aktualny dzień tygodnia
+            const daysMap = {
+                0: 'sun',  // Niedziela
+                1: 'mon',  // Poniedziałek
+                2: 'tue',  // Wtorek
+                3: 'wed',  // Środa
+                4: 'thu',  // Czwartek
+                5: 'fri',  // Piątek
+                6: 'sat'   // Sobota
+            };
+            
+            const daysNameMap = {
+                'mon': 'Poniedziałek',
+                'tue': 'Wtorek',
+                'wed': 'Środa',
+                'thu': 'Czwartek',
+                'fri': 'Piątek',
+                'sat': 'Sobota',
+                'sun': 'Niedziela'
+            };
+            
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            const currentDayId = daysMap[dayOfWeek];
+            const currentDayName = daysNameMap[currentDayId];
+            
+            // Formatuj datę
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const dateStr = now.toLocaleDateString('pl-PL', options);
+            
+            // Pobierz posiłki na dzisiaj
+            const mealsData = [
+                {
+                    id: 'breakfast',
+                    icon: '🌅',
+                    name: 'Śniadanie',
+                    person1: currentPlan[`${currentDayId}-breakfast-person1`] || null,
+                    person2: currentPlan[`${currentDayId}-breakfast-person2`] || null
+                },
+                {
+                    id: 'lunch',
+                    icon: '🍽️',
+                    name: 'Obiad',
+                    person1: currentPlan[`${currentDayId}-lunch-person1`] || null,
+                    person2: currentPlan[`${currentDayId}-lunch-person2`] || null
+                },
+                {
+                    id: 'dinner',
+                    icon: '🌙',
+                    name: 'Kolacja',
+                    person1: currentPlan[`${currentDayId}-dinner-person1`] || null,
+                    person2: currentPlan[`${currentDayId}-dinner-person2`] || null
+                }
+            ];
+            
+            // Sprawdź czy są jakieś zaplanowane posiłki
+            const hasAnyMeal = mealsData.some(m => m.person1 || m.person2);
+            
+            let html = `
+                <div class="today-header">
+                    <div class="today-date">${currentDayName}</div>
+                    <div class="today-day">${dateStr}</div>
+                </div>
+            `;
+            
+            if (!hasAnyMeal) {
+                html += `
+                    <div class="no-meals">
+                        <div class="no-meals-icon">📅</div>
+                        <div class="no-meals-text">Brak zaplanowanych posiłków na dzisiaj</div>
+                        <div class="no-meals-hint">Przejdź do zakładki Plan aby dodać posiłki</div>
+                    </div>
+                `;
+            } else {
+                mealsData.forEach(meal => {
+                    if (meal.person1 || meal.person2) {
+                        html += `
+                            <div class="meal-card">
+                                <div class="meal-card-header">
+                                    <div class="meal-icon">${meal.icon}</div>
+                                    <div class="meal-time">${meal.name}</div>
+                                </div>
+                                <div class="person-section">
+                                    <div class="person-name">Osoba 1</div>
+                                    <div class="recipe-name ${meal.person1 ? '' : 'empty'}" 
+                                         ${meal.person1 ? `onclick="showRecipeDetails('${meal.person1.replace(/'/g, "\\'")}')"` : ''}>
+                                        ${meal.person1 || 'Nie zaplanowano'}
+                                    </div>
+                                </div>
+                                <div class="person-section">
+                                    <div class="person-name">Osoba 2</div>
+                                    <div class="recipe-name ${meal.person2 ? '' : 'empty'}"
+                                         ${meal.person2 ? `onclick="showRecipeDetails('${meal.person2.replace(/'/g, "\\'")}')"` : ''}>
+                                        ${meal.person2 || 'Nie zaplanowano'}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // Pokaż szczegóły przepisu (przejdź do zakładki Przepisy)
+        function showRecipeDetails(recipeName) {
+            switchTab('recipes');
+            // Poczekaj aż zakładka się załaduje
+            setTimeout(() => {
+                const searchInput = document.querySelector('#recipes-container input[type="text"]');
+                if (searchInput) {
+                    searchInput.value = recipeName;
+                    filterRecipes(recipeName);
+                    // Przewiń do góry
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }, 100);
+        }
+
         // Inicjalizacja
+        renderToday();
         renderPlan();
         updateShoppingList();
     </script>
