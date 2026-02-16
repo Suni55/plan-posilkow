@@ -392,6 +392,265 @@
             font-size: 14px;
         }
 
+        /* Tryb gotowania */
+        .cooking-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-main);
+            z-index: 10000;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .cooking-mode.active {
+            display: block;
+        }
+
+        .cooking-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #FF8F6B 100%);
+            padding: 20px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+
+        .cooking-title {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .cooking-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cooking-content {
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cooking-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .cooking-section-title {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .cooking-ingredient {
+            padding: 12px 0;
+            border-bottom: 1px solid var(--bg-main);
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cooking-ingredient:last-child {
+            border-bottom: none;
+        }
+
+        .cooking-step {
+            background: var(--bg-main);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .cooking-step-number {
+            position: absolute;
+            left: -15px;
+            top: -15px;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            box-shadow: var(--shadow);
+        }
+
+        .cooking-step-text {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-left: 15px;
+        }
+
+        .cooking-timer {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--secondary);
+            color: white;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .timer-button {
+            margin-top: 8px;
+            padding: 10px 20px;
+            background: white;
+            color: var(--secondary);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Modal synchronizacji */
+        .sync-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .sync-modal.active {
+            display: flex;
+        }
+
+        .sync-modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .sync-modal-title {
+            font-family: 'Bricolage Grotesque', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .sync-option {
+            background: var(--bg-main);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .sync-option:hover {
+            border-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .sync-option-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .sync-option-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .sync-code-display {
+            background: var(--bg-main);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .sync-code {
+            font-family: 'Courier New', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 8px;
+            margin: 10px 0;
+        }
+
+        .sync-input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 18px;
+            text-align: center;
+            letter-spacing: 4px;
+            font-family: 'Courier New', monospace;
+            text-transform: uppercase;
+            margin: 20px 0;
+        }
+
+        .sync-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .sync-button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .sync-button-secondary {
+            background: var(--text-secondary);
+        }
+
+        .sync-status-connected {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
         .person-label {
             font-size: 11px;
             font-weight: 600;
@@ -765,10 +1024,24 @@
 
         <!-- TAB: Plan -->
         <div id="tab-plan" class="tab-content">
-            <div class="stats" style="margin-bottom: 20px;">
-                <button class="btn-clear" onclick="clearPlan()" style="background: linear-gradient(135deg, #FF6B35 0%, #FF8F6B 100%);">
-                    🗑️ Wyczyść cały plan
-                </button>
+            <div style="margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                    <button class="btn-clear" onclick="copyPreviousWeek()" style="background: var(--secondary);">
+                        📅 Kopiuj poprzedni tydzień
+                    </button>
+                    <button class="btn-clear" onclick="clearPlan()" style="background: linear-gradient(135deg, #FF6B35 0%, #FF8F6B 100%);">
+                        🗑️ Wyczyść cały plan
+                    </button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <button class="btn-clear" onclick="showSyncOptions()" style="background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);">
+                        🔄 Synchronizuj
+                    </button>
+                    <button class="btn-clear" onclick="disconnectSync()" style="background: var(--text-secondary);">
+                        🔗 Rozłącz
+                    </button>
+                </div>
+                <div id="sync-status" style="margin-top: 12px; text-align: center; font-size: 13px; color: var(--text-secondary);"></div>
             </div>
             <div id="plan-container"></div>
         </div>
@@ -793,6 +1066,14 @@
         <div id="tab-recipes" class="tab-content">
             <div id="recipes-container"></div>
         </div>
+    </div>
+
+    <!-- Tryb gotowania -->
+    <div id="cooking-mode" class="cooking-mode"></div>
+
+    <!-- Modal synchronizacji -->
+    <div id="sync-modal" class="sync-modal">
+        <div class="sync-modal-content" id="sync-modal-content"></div>
     </div>
 
     <script>
@@ -864,7 +1145,23 @@
         // Zapisz plan
         function savePlan(plan) {
             localStorage.setItem('mealPlan', JSON.stringify(plan));
+            
+            // Archiwizuj jako poprzedni tydzień
+            if (Object.keys(plan).length > 0) {
+                localStorage.setItem('previousWeekPlan', JSON.stringify(plan));
+            }
+            
             updateShoppingList();
+            
+            // Synchronizuj jeśli połączony
+            if (syncCode && window.storage) {
+                const role = localStorage.getItem('syncRole');
+                if (role === 'host') {
+                    window.storage.set('sync_' + syncCode, JSON.stringify(plan), true).catch(err => {
+                        console.error('Sync save error:', err);
+                    });
+                }
+            }
         }
 
         // Załaduj zaznaczone zakupy
@@ -923,9 +1220,14 @@
                 let html = `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--bg-main);">
                         <div class="day-header" style="margin: 0; padding: 0; border: none;">${day.name}</div>
-                        <button onclick="clearDay('${day.id}')" style="padding: 6px 12px; background: var(--text-secondary); color: white; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600;">
-                            🗑️ Wyczyść
-                        </button>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="copyDay('${day.id}')" style="padding: 6px 12px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                                📋 Kopiuj
+                            </button>
+                            <button onclick="clearDay('${day.id}')" style="padding: 6px 12px; background: var(--text-secondary); color: white; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: 600;">
+                                🗑️ Wyczyść
+                            </button>
+                        </div>
                     </div>
                 `;
                 
@@ -1114,6 +1416,60 @@
             updateShoppingList();
         }
 
+        // Zarządzanie produktami "Zazwyczaj mam"
+        function loadUsuallyOwned() {
+            const saved = localStorage.getItem('usuallyOwned');
+            return saved ? JSON.parse(saved) : {};
+        }
+
+        function saveUsuallyOwned(data) {
+            localStorage.setItem('usuallyOwned', JSON.stringify(data));
+        }
+
+        let usuallyOwned = loadUsuallyOwned();
+
+        function isUsuallyOwned(key) {
+            return usuallyOwned[key] !== undefined;
+        }
+
+        function getDefaultOwned(key) {
+            return usuallyOwned[key] || 0;
+        }
+
+        function toggleUsuallyOwned(key, checked) {
+            if (checked) {
+                // Jeśli zaznaczono, zapisz obecną wartość jako domyślną
+                const currentValue = ownedAmounts[key] || 0;
+                const value = prompt('Ile zazwyczaj masz tego produktu w domu?', currentValue || '');
+                
+                if (value !== null) {
+                    const numValue = parseFloat(value) || 0;
+                    if (numValue > 0) {
+                        usuallyOwned[key] = numValue;
+                        ownedAmounts[key] = numValue;
+                        saveUsuallyOwned(usuallyOwned);
+                        saveOwnedAmounts(ownedAmounts);
+                        updateShoppingList();
+                    }
+                }
+            } else {
+                // Jeśli odznaczono, usuń z listy
+                delete usuallyOwned[key];
+                saveUsuallyOwned(usuallyOwned);
+                updateShoppingList();
+            }
+        }
+
+        // Auto-fill "Posiadane" dla produktów "Zazwyczaj mam"
+        function autoFillUsuallyOwned() {
+            Object.keys(usuallyOwned).forEach(key => {
+                if (!ownedAmounts[key]) {
+                    ownedAmounts[key] = usuallyOwned[key];
+                }
+            });
+            saveOwnedAmounts(ownedAmounts);
+        }
+
         // Aktualizuj listę zakupów
         function updateShoppingList() {
             const list = document.getElementById('shopping-list');
@@ -1205,12 +1561,22 @@
                             <div class="checkbox ${isChecked ? 'checked' : ''}" onclick="toggleItem('${itemKey}')"></div>
                             <div class="item-info">
                                 <div class="item-name">${item.name}</div>
-                                <div class="item-details">Potrzebne: ${neededDisplay}</div>
+                                <div class="item-details">
+                                    Potrzebne: ${neededDisplay}
+                                    <label style="margin-left: 8px; font-size: 11px; cursor: pointer; color: var(--secondary);">
+                                        <input type="checkbox" 
+                                               ${isUsuallyOwned(itemKey) ? 'checked' : ''}
+                                               onchange="toggleUsuallyOwned('${itemKey}', this.checked)"
+                                               onclick="event.stopPropagation()"
+                                               style="margin-right: 4px;">
+                                        Zazwyczaj mam
+                                    </label>
+                                </div>
                             </div>
                             <input type="number" 
                                    class="item-input" 
                                    value="${owned || ''}" 
-                                   placeholder="0"
+                                   placeholder="${getDefaultOwned(itemKey)}"
                                    onchange="updateOwned('${itemKey}', this.value)"
                                    onclick="event.stopPropagation()">
                             <div class="item-needed">${toBuyDisplay}</div>
@@ -1310,7 +1676,13 @@
                                 
                                 ${instrukcjaArray.length > 0 ? `
                                 <div class="recipe-section">
-                                    <div class="recipe-section-title">👨‍🍳 Instrukcja przygotowania</div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                        <div class="recipe-section-title" style="margin: 0;">👨‍🍳 Instrukcja przygotowania</div>
+                                        <button onclick="startCookingMode('${przepis.replace(/'/g, "\\'")}'); event.stopPropagation();" 
+                                                style="padding: 8px 16px; background: var(--secondary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
+                                            🍳 Gotuj
+                                        </button>
+                                    </div>
                                     <ol class="instruction-list">
                                         ${instrukcjaArray.map(step => {
                                             // Usuń numer z początku kroku jeśli istnieje
@@ -1366,6 +1738,44 @@
             }
         }
 
+        // Kopiuj poprzedni tydzień
+        function copyPreviousWeek() {
+            // Sprawdź czy jest zapisany poprzedni plan
+            const previousPlan = localStorage.getItem('previousWeekPlan');
+            
+            if (!previousPlan) {
+                alert('Nie znaleziono poprzedniego tygodnia do skopiowania.\n\nPorada: Za tydzień będziesz mógł użyć tej funkcji aby skopiować obecny plan!');
+                return;
+            }
+            
+            if (Object.keys(currentPlan).length > 0) {
+                if (!confirm('Obecny plan zostanie nadpisany poprzednim tygodniem. Czy kontynuować?')) {
+                    return;
+                }
+            }
+            
+            // Załaduj poprzedni plan
+            currentPlan = JSON.parse(previousPlan);
+            savePlan(currentPlan);
+            renderPlan();
+            
+            alert('✅ Skopiowano plan z poprzedniego tygodnia!');
+        }
+
+        // Zapisz obecny plan jako "poprzedni tydzień" przy przełączaniu na nowy tydzień
+        function archivePreviousWeek() {
+            if (Object.keys(currentPlan).length > 0) {
+                localStorage.setItem('previousWeekPlan', JSON.stringify(currentPlan));
+            }
+        }
+
+        // Zapisz poprzedni plan przy archiwizacji
+        function archivePreviousWeek() {
+            if (Object.keys(currentPlan).length > 0) {
+                localStorage.setItem('previousWeekPlan', JSON.stringify(currentPlan));
+            }
+        }
+
         // Wyczyść jeden dzień
         function clearDay(dayId) {
             // Znajdź wszystkie klucze dla tego dnia
@@ -1383,6 +1793,77 @@
                 savePlan(currentPlan);
                 renderPlan();
             }
+        }
+
+        // Kopiuj dzień
+        let copySourceDay = null;
+        
+        function copyDay(dayId) {
+            // Sprawdź czy dzień ma jakieś posiłki
+            const keysForDay = Object.keys(currentPlan).filter(key => key.startsWith(dayId + '-'));
+            
+            if (keysForDay.length === 0) {
+                alert('Ten dzień jest pusty! Nie ma nic do skopiowania.');
+                return;
+            }
+            
+            copySourceDay = dayId;
+            const sourceDayName = DAYS.find(d => d.id === dayId)?.name;
+            
+            // Pokaż listę dni do wyboru
+            const targetDays = DAYS.filter(d => d.id !== dayId);
+            let options = targetDays.map(d => `${d.name}`).join('\n');
+            
+            let message = `Skopiuj plan z ${sourceDayName} do:\n\n`;
+            targetDays.forEach((d, i) => {
+                message += `${i + 1}. ${d.name}\n`;
+            });
+            message += '\nWpisz numer dnia (1-' + targetDays.length + '):';
+            
+            const choice = prompt(message);
+            
+            if (choice) {
+                const index = parseInt(choice) - 1;
+                if (index >= 0 && index < targetDays.length) {
+                    pasteDayTo(targetDays[index].id);
+                } else {
+                    alert('Nieprawidłowy wybór!');
+                }
+            }
+        }
+        
+        function pasteDayTo(targetDayId) {
+            if (!copySourceDay) return;
+            
+            const sourceDayName = DAYS.find(d => d.id === copySourceDay)?.name;
+            const targetDayName = DAYS.find(d => d.id === targetDayId)?.name;
+            
+            // Sprawdź czy dzień docelowy ma już jakieś posiłki
+            const existingKeys = Object.keys(currentPlan).filter(key => key.startsWith(targetDayId + '-'));
+            
+            if (existingKeys.length > 0) {
+                if (!confirm(`${targetDayName} ma już zaplanowane posiłki. Czy chcesz je nadpisać?`)) {
+                    return;
+                }
+            }
+            
+            // Usuń istniejące posiłki w dniu docelowym
+            existingKeys.forEach(key => delete currentPlan[key]);
+            
+            // Kopiuj posiłki z dnia źródłowego
+            const sourceKeys = Object.keys(currentPlan).filter(key => key.startsWith(copySourceDay + '-'));
+            
+            sourceKeys.forEach(sourceKey => {
+                // Zamień dzień źródłowy na docelowy
+                const newKey = sourceKey.replace(copySourceDay + '-', targetDayId + '-');
+                currentPlan[newKey] = currentPlan[sourceKey];
+            });
+            
+            savePlan(currentPlan);
+            renderPlan();
+            
+            alert(`✅ Skopiowano plan z ${sourceDayName} do ${targetDayName}!`);
+            copySourceDay = null;
         }
 
         // Renderuj widok Dzisiaj
@@ -1509,10 +1990,311 @@
             }, 100);
         }
 
+        // Synchronizacja między urządzeniami
+        let syncCode = null;
+        let syncInterval = null;
+
+        function generateSyncCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function showSyncOptions() {
+            const modal = document.getElementById('sync-modal');
+            const content = document.getElementById('sync-modal-content');
+            
+            content.innerHTML = `
+                <div class="sync-modal-title">🔄 Synchronizacja</div>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    Synchronizuj plan między dwoma urządzeniami (np. Twój telefon i telefon partnera/partnerki)
+                </p>
+                
+                <div class="sync-option" onclick="createSyncCode()">
+                    <div class="sync-option-title">📤 Utwórz kod synchronizacji</div>
+                    <div class="sync-option-desc">Wygeneruj kod który druga osoba wpisze na swoim urządzeniu</div>
+                </div>
+                
+                <div class="sync-option" onclick="showJoinSync()">
+                    <div class="sync-option-title">📥 Dołącz do synchronizacji</div>
+                    <div class="sync-option-desc">Wpisz kod który otrzymałeś/aś od drugiej osoby</div>
+                </div>
+                
+                <button class="sync-button sync-button-secondary" onclick="closeSyncModal()">
+                    Anuluj
+                </button>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function createSyncCode() {
+            syncCode = generateSyncCode();
+            const content = document.getElementById('sync-modal-content');
+            
+            content.innerHTML = `
+                <div class="sync-modal-title">📤 Kod synchronizacji</div>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    Podyktuj ten kod drugiej osobie. Ona wpisze go na swoim urządzeniu aby połączyć plany.
+                </p>
+                
+                <div class="sync-code-display">
+                    <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 10px;">
+                        Twój kod synchronizacji:
+                    </div>
+                    <div class="sync-code">${syncCode}</div>
+                    <button class="sync-button" onclick="copySyncCode('${syncCode}')" style="margin-top: 10px;">
+                        📋 Kopiuj kod
+                    </button>
+                </div>
+                
+                <p style="font-size: 13px; color: var(--text-secondary); margin: 20px 0;">
+                    ⏳ Czekam na połączenie drugiej osoby...<br>
+                    Synchronizacja rozpocznie się automatycznie po wpisaniu kodu.
+                </p>
+                
+                <button class="sync-button" onclick="startHostSync()">
+                    ✅ Rozpocznij synchronizację
+                </button>
+                
+                <button class="sync-button sync-button-secondary" onclick="closeSyncModal()">
+                    Anuluj
+                </button>
+            `;
+        }
+
+        function showJoinSync() {
+            const content = document.getElementById('sync-modal-content');
+            
+            content.innerHTML = `
+                <div class="sync-modal-title">📥 Dołącz do synchronizacji</div>
+                <p style="margin-bottom: 20px; color: var(--text-secondary);">
+                    Wpisz 6-znakowy kod który otrzymałeś/aś od drugiej osoby
+                </p>
+                
+                <input type="text" 
+                       class="sync-input" 
+                       id="sync-code-input" 
+                       placeholder="ABC123"
+                       maxlength="6"
+                       oninput="this.value = this.value.toUpperCase()">
+                
+                <button class="sync-button" onclick="joinSync()">
+                    ✅ Połącz
+                </button>
+                
+                <button class="sync-button sync-button-secondary" onclick="showSyncOptions()">
+                    Wstecz
+                </button>
+            `;
+        }
+
+        function copySyncCode(code) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code);
+                alert('✅ Kod skopiowany do schowka: ' + code);
+            } else {
+                alert('Kod: ' + code + '\n\nSkopiuj go ręcznie.');
+            }
+        }
+
+        async function startHostSync() {
+            if (!syncCode) return;
+            
+            // Użyj window.storage jeśli dostępne
+            if (window.storage) {
+                try {
+                    await window.storage.set('sync_' + syncCode, JSON.stringify(currentPlan), true);
+                    startSyncPolling(syncCode, true);
+                    localStorage.setItem('syncCode', syncCode);
+                    localStorage.setItem('syncRole', 'host');
+                    updateSyncStatus('🔄 Połączono! Synchronizacja aktywna.');
+                    closeSyncModal();
+                } catch (error) {
+                    alert('❌ Błąd synchronizacji. Spróbuj ponownie.');
+                }
+            } else {
+                alert('⚠️ Synchronizacja między urządzeniami wymaga wersji online aplikacji.\n\nNa razie możesz używać funkcji "Kopiuj poprzedni tydzień" aby przesyłać plan ręcznie.');
+            }
+        }
+
+        async function joinSync() {
+            const input = document.getElementById('sync-code-input');
+            const code = input.value.trim().toUpperCase();
+            
+            if (code.length !== 6) {
+                alert('❌ Kod musi mieć 6 znaków!');
+                return;
+            }
+            
+            if (window.storage) {
+                try {
+                    // Pobierz plan z kodu
+                    const result = await window.storage.get('sync_' + code, true);
+                    if (result && result.value) {
+                        currentPlan = JSON.parse(result.value);
+                        savePlan(currentPlan);
+                        renderPlan();
+                        
+                        syncCode = code;
+                        startSyncPolling(code, false);
+                        localStorage.setItem('syncCode', code);
+                        localStorage.setItem('syncRole', 'guest');
+                        updateSyncStatus('🔄 Połączono! Synchronizacja aktywna.');
+                        closeSyncModal();
+                    } else {
+                        alert('❌ Nie znaleziono planu z tym kodem. Upewnij się że druga osoba utworzyła kod i rozpoczęła synchronizację.');
+                    }
+                } catch (error) {
+                    alert('❌ Błąd synchronizacji. Sprawdź kod i spróbuj ponownie.');
+                }
+            } else {
+                alert('⚠️ Synchronizacja między urządzeniami wymaga wersji online aplikacji.');
+            }
+        }
+
+        function startSyncPolling(code, isHost) {
+            // Synchronizuj co 5 sekund
+            syncInterval = setInterval(async () => {
+                if (window.storage) {
+                    try {
+                        if (isHost) {
+                            // Host zapisuje plan
+                            await window.storage.set('sync_' + code, JSON.stringify(currentPlan), true);
+                        } else {
+                            // Guest pobiera plan
+                            const result = await window.storage.get('sync_' + code, true);
+                            if (result && result.value) {
+                                const remotePlan = JSON.parse(result.value);
+                                // Sprawdź czy plan się zmienił
+                                if (JSON.stringify(remotePlan) !== JSON.stringify(currentPlan)) {
+                                    currentPlan = remotePlan;
+                                    savePlan(currentPlan);
+                                    renderPlan();
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Sync error:', error);
+                    }
+                }
+            }, 5000);
+        }
+
+        function disconnectSync() {
+            if (!syncCode && !localStorage.getItem('syncCode')) {
+                alert('Nie jesteś połączony z żadnym urządzeniem.');
+                return;
+            }
+            
+            if (confirm('Czy na pewno chcesz rozłączyć synchronizację?\n\nPlan pozostanie na Twoim urządzeniu, ale zmiany nie będą już synchronizowane.')) {
+                if (syncInterval) {
+                    clearInterval(syncInterval);
+                    syncInterval = null;
+                }
+                syncCode = null;
+                localStorage.removeItem('syncCode');
+                localStorage.removeItem('syncRole');
+                updateSyncStatus('');
+                alert('✅ Rozłączono synchronizację.');
+            }
+        }
+
+        function updateSyncStatus(message) {
+            const statusElement = document.getElementById('sync-status');
+            if (statusElement) {
+                statusElement.innerHTML = message ? `<span class="sync-status-connected">${message}</span>` : '';
+            }
+        }
+
+        function closeSyncModal() {
+            document.getElementById('sync-modal').classList.remove('active');
+        }
+
+        // Przywróć synchronizację po przeładowaniu strony
+        function restoreSync() {
+            const savedCode = localStorage.getItem('syncCode');
+            const savedRole = localStorage.getItem('syncRole');
+            
+            if (savedCode && savedRole) {
+                syncCode = savedCode;
+                startSyncPolling(savedCode, savedRole === 'host');
+                updateSyncStatus('🔄 Synchronizacja aktywna (kod: ' + savedCode + ')');
+            }
+        }
+
+        // Tryb gotowania
+        function startCookingMode(recipeName) {
+            const ingredients = PRZEPISY_DATA.skladniki[recipeName] || [];
+            const steps = PRZEPISY_DATA.instrukcje[recipeName] || [];
+            
+            if (steps.length === 0) {
+                alert('Ten przepis nie ma instrukcji przygotowania.');
+                return;
+            }
+            
+            const modal = document.getElementById('cooking-mode');
+            
+            let html = `
+                <div class="cooking-header">
+                    <button class="cooking-close" onclick="closeCookingMode()">×</button>
+                    <div class="cooking-title">${recipeName}</div>
+                    <div style="opacity: 0.9; font-size: 14px;">Tryb gotowania</div>
+                </div>
+                
+                <div class="cooking-content">
+                    <div class="cooking-section">
+                        <div class="cooking-section-title">📝 Składniki</div>
+                        ${ingredients.map(ing => `
+                            <div class="cooking-ingredient">
+                                <span>${ing.skladnik}</span>
+                                <strong>${ing.ilosc} ${ing.jednostka}</strong>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="cooking-section">
+                        <div class="cooking-section-title">👨‍🍳 Kroki przygotowania</div>
+                        ${steps.map((step, index) => {
+                            const cleanStep = step.replace(/^\d+\.\s*/, '');
+                            // Sprawdź czy w kroku jest czas (np. "15 minut", "2 godziny")
+                            const timeMatch = cleanStep.match(/(\d+)\s*(minut|min|godzin|godz)/i);
+                            
+                            return `
+                                <div class="cooking-step">
+                                    <div class="cooking-step-number">${index + 1}</div>
+                                    <div class="cooking-step-text">${cleanStep}</div>
+                                    ${timeMatch ? `
+                                        <div class="cooking-timer">
+                                            ⏱️ ${timeMatch[0]}
+                                            <button class="timer-button" onclick="alert('Timer: ${timeMatch[0]}\\n\\nUstaw timer na telefonie!')">
+                                                Ustaw timer
+                                            </button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            
+            modal.innerHTML = html;
+            modal.classList.add('active');
+            
+            // Zablokuj scroll w tle
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeCookingMode() {
+            const modal = document.getElementById('cooking-mode');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
         // Inicjalizacja
         renderToday();
         renderPlan();
         updateShoppingList();
+        restoreSync();
     </script>
 </body>
 </html>
