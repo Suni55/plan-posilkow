@@ -30,9 +30,6 @@
         body.dark .autocomplete-item:hover { background: #2E2E2E; }
         body.dark .item-input { background: #2E2E2E; color: var(--text-primary); border-color: #3A3A3A; }
         body.dark .search-input { background: #2E2E2E; color: var(--text-primary); border-color: #3A3A3A; }
-        body.dark .sync-box { background: #252525; }
-        body.dark .sync-option { background: #2E2E2E; }
-        body.dark .sync-input { background: #2E2E2E; color: var(--text-primary); border-color: #3A3A3A; }
         body.dark .custom-add-form { background: #252525; }
         body.dark .custom-add-input { background: #2E2E2E; color: var(--text-primary); border-color: #3A3A3A; }
         body.dark .cooking-overlay { background: #1A1A1A; }
@@ -287,11 +284,6 @@
                 <button class="btn btn-secondary" onclick="copyPreviousWeek()">📅 Kopiuj poprzedni tydzień</button>
                 <button class="btn btn-primary" onclick="clearPlan()">🗑️ Wyczyść cały plan</button>
             </div>
-            <div class="plan-actions-bottom">
-                <button class="btn btn-purple" onclick="showSyncModal()">🔄 Synchronizuj</button>
-                <button class="btn btn-gray" onclick="disconnectSync()">🔗 Rozłącz sync</button>
-            </div>
-            <div id="sync-status" class="sync-status"></div>
             <div id="plan-container"></div>
         </div>
 
@@ -307,6 +299,10 @@
                     <div class="stat-label">Kupionych</div>
                 </div>
             </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+                <button class="btn btn-secondary" onclick="shareShoppingList()">📤 Udostępnij listę</button>
+                <button class="btn btn-primary" onclick="clearCheckedItems()">✓ Wyczyść kupione</button>
+            </div>
             <div class="custom-add-form">
                 <div class="custom-add-title">➕ Dodaj własny produkt</div>
                 <div class="custom-add-row">
@@ -317,7 +313,6 @@
                 </div>
             </div>
             <div class="card" id="shopping-list"></div>
-            <button class="btn btn-secondary" style="width:100%; margin-top:14px;" onclick="clearCheckedItems()">Wyczyść kupione</button>
         </div>
 
         <!-- PRZEPISY -->
@@ -328,11 +323,6 @@
 
     <!-- TRYB GOTOWANIA -->
     <div id="cooking-overlay" class="cooking-overlay"></div>
-
-    <!-- SYNC MODAL -->
-    <div id="sync-overlay" class="sync-overlay" onclick="closeSyncModal(event)">
-        <div class="sync-box" id="sync-box" onclick="event.stopPropagation()"></div>
-    </div>
 
     <!-- COPY DAY MODAL -->
     <div id="copyday-overlay" class="sync-overlay" onclick="closeCopyDayModal()">
@@ -384,7 +374,6 @@
             localStorage.setItem('previousWeekPlan', JSON.stringify(plan));
         updateRecipeHistory(plan);
         updateShoppingList();
-        syncPush();
     }
     function saveCheckedItems(arr)   { localStorage.setItem('checkedItems',   JSON.stringify(arr)); }
     function saveOwnedAmounts(obj)   { localStorage.setItem('ownedAmounts',   JSON.stringify(obj)); }
@@ -1174,185 +1163,75 @@
         document.body.style.overflow='';
     }
 
-    // ─── SYNCHRONIZACJA ────────────────────────────────────────
-    let syncCode = localStorage.getItem('syncCode') || null;
-    let syncRole = localStorage.getItem('syncRole') || null;
-    let syncInterval = null;
-    const SYNC_KEY = 'sync_plan_';
-
-    function showSyncModal() {
-        const box = document.getElementById('sync-box');
-        box.innerHTML = `
-            <div class="sync-title">🔄 Synchronizacja</div>
-            <p style="color:var(--text-secondary);margin-bottom:18px;font-size:14px;">
-                Współdziel plan tygodnia z drugą osobą w czasie rzeczywistym</p>
-            <div class="sync-option" onclick="startCreateSync()">
-                <div class="sync-option-title">📤 Utwórz kod synchronizacji</div>
-                <div class="sync-option-desc">Wygeneruj kod dla drugiej osoby</div>
-            </div>
-            <div class="sync-option" onclick="startJoinSync()">
-                <div class="sync-option-title">📥 Dołącz do synchronizacji</div>
-                <div class="sync-option-desc">Wpisz kod od drugiej osoby</div>
-            </div>
-            <button class="sync-btn sync-btn-gray" onclick="closeSyncModal()">Anuluj</button>`;
-        document.getElementById('sync-overlay').classList.add('active');
-    }
-
-    function startCreateSync() {
-        const code = Math.random().toString(36).substring(2,8).toUpperCase();
-        const box = document.getElementById('sync-box');
-        box.innerHTML = `
-            <div class="sync-title">📤 Twój kod</div>
-            <p style="color:var(--text-secondary);font-size:14px;margin-bottom:4px;">
-                Podaj ten kod drugiej osobie</p>
-            <div class="sync-code-big">${code}</div>
-            <button class="sync-btn sync-btn-gray" style="margin-bottom:8px;" onclick="copyToClipboard('${code}')">
-                📋 Kopiuj kod
-            </button>
-            <button class="sync-btn sync-btn-main" onclick="activateSync('${code}','host')">
-                ✅ Rozpocznij synchronizację
-            </button>
-            <button class="sync-btn sync-btn-gray" onclick="showSyncModal()">Wstecz</button>`;
-    }
-
-    function startJoinSync() {
-        const box = document.getElementById('sync-box');
-        box.innerHTML = `
-            <div class="sync-title">📥 Dołącz</div>
-            <p style="color:var(--text-secondary);font-size:14px;">Wpisz kod od drugiej osoby</p>
-            <input type="text" class="sync-input" id="sync-code-inp" placeholder="ABC123" maxlength="6"
-                oninput="this.value=this.value.toUpperCase()">
-            <button class="sync-btn sync-btn-main" onclick="joinSync()">✅ Połącz</button>
-            <button class="sync-btn sync-btn-gray" onclick="showSyncModal()">Wstecz</button>`;
-    }
-
-    async function joinSync() {
-        const code = document.getElementById('sync-code-inp')?.value.trim().toUpperCase();
-        if (!code || code.length !== 6) { alert('Wpisz 6-znakowy kod!'); return; }
-        showSyncLoading('Łączenie...');
-        try {
-            const result = await window.storage.get(SYNC_KEY + code, true);
-            if (result && result.value) {
-                currentPlan = JSON.parse(result.value);
-                savePlan(currentPlan);
-                renderPlan();
-                activateSync(code, 'guest');
-            } else {
-                showSyncError('Nie znaleziono kodu. Upewnij się że druga osoba utworzyła synchronizację.');
+    // ─── UDOSTĘPNIANIE LISTY ZAKUPÓW ───────────────────────────
+    function shareShoppingList() {
+        const items = [];
+        
+        // Produkty z przepisów
+        Object.keys(shoppingList).forEach(product => {
+            const data = shoppingList[product];
+            const checked = checkedItems[product] || false;
+            const owned = ownedAmounts[product] || 0;
+            const needed = data.total - owned;
+            if (needed > 0 && !checked) {
+                const unit = data.unit || '';
+                items.push(`${product}: ${needed.toFixed(1)}${unit}`);
             }
-        } catch(e) {
-            showSyncError('Błąd połączenia: ' + e.message);
-        }
-    }
-
-    async function activateSync(code, role) {
-        syncCode = code;
-        syncRole = role;
-        localStorage.setItem('syncCode', code);
-        localStorage.setItem('syncRole', role);
-
-        if (role === 'host') {
-            await syncPush();
-        }
-
-        startSyncPolling();
-        setSyncStatus(`🔄 Synchronizacja aktywna (kod: ${code})`);
-        closeSyncModal();
-        alert(`✅ Synchronizacja aktywna!\nKod: ${code}\nRola: ${role === 'host' ? 'Twórca (wysyła)' : 'Gość (odbiera)'}`);
-    }
-
-    async function syncPush() {
-        if (!syncCode || syncRole !== 'host' || !window.storage) return;
-        try {
-            await window.storage.set(SYNC_KEY + syncCode, JSON.stringify(currentPlan), true);
-        } catch(e) { console.error('Sync push error:', e); }
-    }
-
-    async function syncPull() {
-        if (!syncCode || syncRole !== 'guest' || !window.storage) return;
-        try {
-            const result = await window.storage.get(SYNC_KEY + syncCode, true);
-            if (result?.value) {
-                const remote = JSON.parse(result.value);
-                if (JSON.stringify(remote) !== JSON.stringify(currentPlan)) {
-                    currentPlan = remote;
-                    localStorage.setItem('mealPlan', JSON.stringify(currentPlan));
-                    renderPlan();
-                    updateShoppingList();
-                }
+        });
+        
+        // Własne produkty
+        customProducts.forEach(item => {
+            if (!item.checked) {
+                items.push(item.name);
             }
-        } catch(e) { console.error('Sync pull error:', e); }
-    }
-
-    function startSyncPolling() {
-        if (syncInterval) clearInterval(syncInterval);
-        syncInterval = setInterval(() => {
-            if (syncRole === 'guest') syncPull();
-            if (syncRole === 'host')  syncPush();
-        }, 5000);
-    }
-
-    function disconnectSync() {
-        if (!syncCode) { alert('Nie jesteś połączony z żadnym urządzeniem.'); return; }
-        if (confirm('Rozłączyć synchronizację?\nPlan pozostanie na tym urządzeniu.')) {
-            if (syncInterval) clearInterval(syncInterval);
-            syncCode = syncRole = null;
-            syncInterval = null;
-            localStorage.removeItem('syncCode');
-            localStorage.removeItem('syncRole');
-            setSyncStatus('');
-            alert('✅ Rozłączono synchronizację.');
+        });
+        
+        if (items.length === 0) {
+            alert('Lista zakupów jest pusta lub wszystko kupione!');
+            return;
+        }
+        
+        const text = `🛒 Lista zakupów:\n\n${items.map((item, i) => `${i + 1}. ${item}`).join('\n')}\n\n📱 Plan Posiłków`;
+        
+        if (navigator.share) {
+            navigator.share({
+                title: 'Lista zakupów',
+                text: text
+            }).catch(() => {
+                // Fallback - skopiuj do schowka
+                copyToClipboard(text);
+            });
+        } else {
+            // Fallback dla przeglądarek bez Web Share API
+            copyToClipboard(text);
         }
     }
-
-    function setSyncStatus(msg) {
-        const el = document.getElementById('sync-status');
-        if (el) el.textContent = msg;
-    }
-
-    function showSyncLoading(msg) {
-        document.getElementById('sync-box').innerHTML = `
-            <div style="text-align:center;padding:40px 20px;">
-                <div style="font-size:48px;margin-bottom:16px;">🔄</div>
-                <div class="sync-title" style="text-align:center;">${msg}</div>
-                <div style="margin-top:16px;"><span class="sync-spinner"></span>Łączenie...</div>
-            </div>`;
-    }
-
-    function showSyncError(msg) {
-        document.getElementById('sync-box').innerHTML = `
-            <div style="text-align:center;padding:30px 20px;">
-                <div style="font-size:48px;margin-bottom:16px;">❌</div>
-                <div class="sync-title" style="text-align:center;color:#E85A2A;">Błąd</div>
-                <p style="color:var(--text-secondary);margin:12px 0;">${msg}</p>
-                <button class="sync-btn sync-btn-main" onclick="showSyncModal()">Spróbuj ponownie</button>
-                <button class="sync-btn sync-btn-gray" onclick="closeSyncModal()">Zamknij</button>
-            </div>`;
-    }
-
-    function closeSyncModal(e) {
-        if (!e || e.target === document.getElementById('sync-overlay'))
-            document.getElementById('sync-overlay').classList.remove('active');
-    }
-
+    
     function copyToClipboard(text) {
-        if (navigator.clipboard) { navigator.clipboard.writeText(text); alert('✅ Skopiowano: ' + text); }
-        else alert('Kod: ' + text);
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Lista skopiowana do schowka!');
+            }).catch(() => {
+                alert('Nie udało się skopiować. Lista:\n\n' + text);
+            });
+        } else {
+            alert('Lista zakupów:\n\n' + text);
+        }
     }
 
     // ─── INIT ──────────────────────────────────────────────────
+    // Jednorazowe czyszczenie starych danych synchronizacji
+    if (localStorage.getItem('syncCode')) {
+        localStorage.removeItem('syncCode');
+        localStorage.removeItem('syncRole');
+    }
+    
     initDarkMode();
     updateRecipeHistory(currentPlan);
     renderWeekNav();
     renderToday();
     renderPlan();
     updateShoppingList();
-
-    // Przywróć synchronizację
-    if (syncCode && syncRole) {
-        startSyncPolling();
-        setSyncStatus(`🔄 Synchronizacja aktywna (kod: ${syncCode})`);
-    }
     </script>
 </body>
 </html>
